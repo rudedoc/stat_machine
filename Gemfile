@@ -34,6 +34,8 @@ gem "thruster", require: false
 # Use Active Storage variants [https://guides.rubyonrails.org/active_storage_overview.html#transforming-images]
 gem "image_processing", "~> 1.2"
 
+gem "openssl", "~> 3.3.2"
+
 group :development, :test do
   # See https://guides.rubyonrails.org/debugging_rails_applications.html#debugging-with-the-debug-gem
   gem "debug", platforms: %i[ mri windows ], require: "debug/prelude"
@@ -62,3 +64,7 @@ gem "pry-rails", "~> 0.3.11"
 gem "haml-rails", "~> 3.0"
 
 gem "html2haml", "~> 2.3"
+
+gem "google-id-token", "~> 1.4"
+
+gem "firebase_id_token", "~> 2.5"

@@ -3,11 +3,13 @@
   "type": "module",
   "devDependencies": {
     "sass-embedded": "^1.97.1",
-    "vite": "^5.4.21",
-    "vite-plugin-ruby": "^5.1.1"
+    "vite": "^5.0.0",
+    "vite-plugin-ruby": "^5.1.0"
   },
   "dependencies": {
     "@popperjs/core": "^2.11.8",
-    "bootstrap": "^5.3.8"
+    "bootstrap": "^5.3.8",
+    "firebase": "10.14.1",
+    "firebaseui": "6.1.0"
   }
 }

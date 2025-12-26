@@ -1,6 +1,6 @@
 -# app/views/pages/home.html.haml
+
 .container.py-4
-  -# Navigation / Breadcrumbs
   .d-flex.justify-content-between.align-items-center.mb-4
     %nav{ "aria-label" => "breadcrumb" }
       %ol.breadcrumb.mb-0
@@ -9,19 +9,14 @@
           %li.breadcrumb-item= link_to params[:country], root_path(country: params[:country]), class: "text-decoration-none"
         - if params[:competition_id]
           %li.breadcrumb-item.active League View
-    .d-flex.gap-2
-      -# Dynamic API link based on current view
-      - api_path = if params[:competition_id]
-        - api_v1_country_competition_matches_path(params[:country], params[:competition_id], format: :json)
-      - elsif params[:country]
-        - api_v1_country_competitions_path(params[:country], format: :json)
-      - else
-        - api_v1_countries_path(format: :json)
 
-      = link_to api_path, class: "btn btn-sm btn-outline-secondary d-flex align-items-center gap-2", target: "_blank" do
-        %i.bi.bi-code-slash
-        %span View API Data
+    .d-flex.align-items-center.gap-3
+      #user-profile-nav
+      %button#sign-in-btn.btn.btn-sm.btn-primary.d-none{ type: "button" } Sign In
+      %button#sign-out-btn.btn.btn-sm.btn-outline-danger.d-none{ type: "button" } Sign Out
 
+  -# This container holds the Firebase UI
+  #firebaseui-auth-container
   -# Legend (Only show when viewing matches)
   - if @matches.present?
     .mb-3.d-flex.gap-3.justify-content-center.small.text-muted{ style: "font-size: 0.75rem;" }
