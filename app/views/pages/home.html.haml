@@ -1,0 +1,43 @@
+.container.py-4
+  .d-flex.justify-content-between.align-items-center.mb-4
+    %h1.h4.fw-bold.mb-0 Market Probabilities
+    %span.badge.bg-light.text-dark.border.fw-normal Live UK  IE Soccer
+  .card.border-0.shadow-sm.overflow-hidden
+    .table-responsive
+      %table.table.table-hover.align-middle.mb-0{:style => "table-layout: fixed;"}
+        %thead.bg-light
+          %tr.small.text-uppercase.text-muted.fw-bold
+            %th.ps-4.py-3{:style => "width: 15%;"} Kick Off
+            %th.py-3{:style => "width: 30%;"} Match
+            %th.py-3.text-center{:style => "width: 55%;"} Probabilities (H / D / A)
+        %tbody.border-top-0
+          - @matches.each do |match|
+            - percentages = ProbabilityCalculator.to_percentages(match[:runners])
+            %tr
+              %td.ps-4.py-2
+                .small.fw-bold.text-muted
+                  = match[:kick_off].to_time.strftime(%a %d %b %H:%M)
+              %td.py-2
+                .d-flex.align-items-center.gap-2
+                  %span.fw-bold.text-dark.text-truncate{:style => "font-size: 0.9rem;"}
+                    = match[:event_name]
+                  - if match[:inplay]
+                    %span.badge.bg-danger.p-1{:style => "font-size: 0.55rem;"} LIVE
+              %td.pe-4.py-2
+                .progress{:style => "height: 22px; border-radius: 4px; background-color: #f1f3f5;"}
+                  - percentages.each_with_index do |data, idx|
+                    - bg_class = ['bg-primary', 'bg-secondary', 'bg-success'][idx]
+                    %div{:class => "progress-bar #{bg_class} border-end border-white border-1", :role => "progressbar", :style => "width: #{data[:percentage]}%", :title => "#{data[:name]}"}
+                      %small.fw-bold{:style => "font-size: 0.7rem;"}
+                        = data[:percentage]
+                        \%
+  .mt-3.d-flex.gap-3.justify-content-center.small.text-muted{:style => "font-size: 0.75rem;"}
+    .d-flex.align-items-center.gap-1
+      .bg-primary.rounded-circle{:style => "width: 7px; height: 7px;"}
+      Home
+    .d-flex.align-items-center.gap-1
+      .bg-secondary.rounded-circle{:style => "width: 7px; height: 7px;"}
+      Draw
+    .d-flex.align-items-center.gap-1
+      .bg-success.rounded-circle{:style => "width: 7px; height: 7px;"}
+      Away

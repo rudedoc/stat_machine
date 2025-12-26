@@ -1,2 +1,11 @@
 #!/usr/bin/env ruby
-exec "./bin/rails", "server", *ARGV
+
+require 'fileutils'
+
+Dir.chdir File.expand_path('..', __dir__) do
+  # Check if foreman is installed; if not, install it
+  system "gem install foreman" unless system "gem list -i foreman > /dev/null"
+
+  # Run foreman using Procfile.dev
+  exec "foreman start -f Procfile.dev"
+end

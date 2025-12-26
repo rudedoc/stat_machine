@@ -54,3 +54,11 @@ group :development do
 end
 
 gem "vite_rails", "~> 3.0"
+
+gem "faraday", "~> 2.14"
+
+gem "pry-rails", "~> 0.3.11"
+
+gem "haml-rails", "~> 3.0"
+
+gem "html2haml", "~> 2.3"
