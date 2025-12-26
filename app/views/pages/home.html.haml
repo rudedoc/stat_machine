@@ -1,43 +1,111 @@
+-# app/views/pages/home.html.haml
 .container.py-4
+  -# Navigation / Breadcrumbs
   .d-flex.justify-content-between.align-items-center.mb-4
-    %h1.h4.fw-bold.mb-0 Market Probabilities
-    %span.badge.bg-light.text-dark.border.fw-normal Live UK  IE Soccer
-  .card.border-0.shadow-sm.overflow-hidden
-    .table-responsive
-      %table.table.table-hover.align-middle.mb-0{:style => "table-layout: fixed;"}
-        %thead.bg-light
-          %tr.small.text-uppercase.text-muted.fw-bold
-            %th.ps-4.py-3{:style => "width: 15%;"} Kick Off
-            %th.py-3{:style => "width: 30%;"} Match
-            %th.py-3.text-center{:style => "width: 55%;"} Probabilities (H / D / A)
-        %tbody.border-top-0
-          - @matches.each do |match|
-            - percentages = ProbabilityCalculator.to_percentages(match[:runners])
-            %tr
-              %td.ps-4.py-2
-                .small.fw-bold.text-muted
-                  = match[:kick_off].to_time.strftime(%a %d %b %H:%M)
-              %td.py-2
-                .d-flex.align-items-center.gap-2
-                  %span.fw-bold.text-dark.text-truncate{:style => "font-size: 0.9rem;"}
-                    = match[:event_name]
-                  - if match[:inplay]
-                    %span.badge.bg-danger.p-1{:style => "font-size: 0.55rem;"} LIVE
-              %td.pe-4.py-2
-                .progress{:style => "height: 22px; border-radius: 4px; background-color: #f1f3f5;"}
-                  - percentages.each_with_index do |data, idx|
-                    - bg_class = ['bg-primary', 'bg-secondary', 'bg-success'][idx]
-                    %div{:class => "progress-bar #{bg_class} border-end border-white border-1", :role => "progressbar", :style => "width: #{data[:percentage]}%", :title => "#{data[:name]}"}
-                      %small.fw-bold{:style => "font-size: 0.7rem;"}
-                        = data[:percentage]
-                        \%
-  .mt-3.d-flex.gap-3.justify-content-center.small.text-muted{:style => "font-size: 0.75rem;"}
-    .d-flex.align-items-center.gap-1
-      .bg-primary.rounded-circle{:style => "width: 7px; height: 7px;"}
-      Home
-    .d-flex.align-items-center.gap-1
-      .bg-secondary.rounded-circle{:style => "width: 7px; height: 7px;"}
-      Draw
-    .d-flex.align-items-center.gap-1
-      .bg-success.rounded-circle{:style => "width: 7px; height: 7px;"}
-      Away
+    %nav{ "aria-label" => "breadcrumb" }
+      %ol.breadcrumb.mb-0
+        %li.breadcrumb-item= link_to "World", root_path, class: "text-decoration-none"
+        - if params[:country]
+          %li.breadcrumb-item= link_to params[:country], root_path(country: params[:country]), class: "text-decoration-none"
+        - if params[:competition_id]
+          %li.breadcrumb-item.active League View
+    .d-flex.gap-2
+      -# Dynamic API link based on current view
+      - api_path = if params[:competition_id]
+        - api_v1_country_competition_matches_path(params[:country], params[:competition_id], format: :json)
+      - elsif params[:country]
+        - api_v1_country_competitions_path(params[:country], format: :json)
+      - else
+        - api_v1_countries_path(format: :json)
+
+      = link_to api_path, class: "btn btn-sm btn-outline-secondary d-flex align-items-center gap-2", target: "_blank" do
+        %i.bi.bi-code-slash
+        %span View API Data
+
+  -# Legend (Only show when viewing matches)
+  - if @matches.present?
+    .mb-3.d-flex.gap-3.justify-content-center.small.text-muted{ style: "font-size: 0.75rem;" }
+      .d-flex.align-items-center.gap-1
+        .bg-primary.rounded-circle{ style: "width: 7px; height: 7px;" }
+        Home
+      .d-flex.align-items-center.gap-1
+        .bg-secondary.rounded-circle{ style: "width: 7px; height: 7px;" }
+        Draw
+      .d-flex.align-items-center.gap-1
+        .bg-success.rounded-circle{ style: "width: 7px; height: 7px;" }
+        Away
+
+  -# Stage 1: Country Selection
+  - if @countries.present?
+    .row.g-3
+      - @countries.sort_by { |c| c["countryCode"] }.each do |c|
+        .col-6.col-md-3.col-lg-2
+          = link_to root_path(country: c["countryCode"]), class: "card text-center p-3 text-decoration-none shadow-sm h-100 hover-elevate" do
+            .h5.mb-1.text-dark= c["countryCode"]
+            .small.text-muted= "#{c["marketCount"]} Events"
+
+  -# Stage 2: Competition/League Selection
+  - if @competitions.present?
+    .list-group.shadow-sm
+      - @competitions.sort_by { |comp| comp.dig("competition", "name") }.each do |comp|
+        = link_to root_path(country: params[:country], competition_id: comp.dig("competition", "id")), class: "list-group-item list-group-item-action d-flex justify-content-between align-items-center py-3" do
+          %span.fw-bold= comp.dig("competition", "name")
+          %span.badge.bg-primary.rounded-pill= "#{comp["marketCount"]} Markets"
+
+  -# Stage 3: Compact Match Odds Table
+  - if @matches.present?
+    .card.border-0.shadow-sm.overflow-hidden
+      .table-responsive
+        %table.table.table-hover.align-middle.mb-0{ style: "table-layout: fixed;" }
+          %thead.bg-light
+            %tr.small.text-uppercase.text-muted.fw-bold
+              %th.ps-4.py-3{ style: "width: 20%;" } Kick Off
+              %th.py-3{ style: "width: 30%;" } Match
+              %th.py-3.text-center{ style: "width: 50%;" } Probabilities (H / D / A)
+
+          %tbody.border-top-0
+            - @matches.each do |match|
+              - percentages = ProbabilityCalculator.to_percentages(match[:runners])
+              %tr
+                %td.ps-4.py-2
+                  .small.fw-bold.text-muted{ style: "line-height: 1.2;" }
+                    %div= match[:kick_off].to_time.strftime("%a %d %b")
+                    .text-primary= match[:kick_off].to_time.strftime("%H:%M")
+
+                %td.py-2
+                  .d-flex.align-items-center.gap-2
+                    %span.fw-bold.text-dark.text-truncate{ style: "font-size: 0.9rem;" }
+                      = match[:event_name]
+                    - if match[:inplay]
+                      %span.badge.bg-danger.p-1.animate-pulse{ style: "font-size: 0.55rem;" } LIVE
+
+                %td.pe-4.py-2
+                  .progress{ style: "height: 22px; border-radius: 4px; background-color: #f1f3f5;" }
+                    - percentages.each_with_index do |data, idx|
+                      - bg_class = ['bg-primary', 'bg-secondary', 'bg-success'][idx]
+                      .progress-bar.border-end.border-white.border-1{ class: bg_class,
+                        role: "progressbar",
+                        style: "width: #{data[:percentage]}%",
+                        title: "#{data[:name]}: #{data[:percentage]}%" }
+
+                        - if data[:percentage] > 15
+                          %small.fw-bold{ style: "font-size: 0.7rem;" }= "#{data[:percentage]}%"
+
+  - if !@countries && !@competitions && !@matches
+    .text-center.py-5
+      %p.text-muted No events found for this selection.
+      = link_to "Return to World View", root_path, class: "btn btn-outline-primary"
+
+:css
+  .animate-pulse {
+    animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+  }
+  @keyframes pulse {
+    0%, 100% { opacity: 1; }
+    50% { opacity: .5; }
+  }
+  .hover-elevate:hover {
+    transform: translateY(-3px);
+    transition: transform 0.2s ease;
+    background-color: #f8f9fa;
+  }

@@ -2,29 +2,51 @@ class BetfairApi
   BASE_URL = "https://api.betfair.com/exchange/betting/rest/v1.0/"
   LOGIN_URL = "https://identitysso.betfair.com/api/login"
 
-  def self.fetch_soccer_odds
-    api = new
-    events = api.list_soccer_events
-    api.fetch_match_odds_for_events(events)
-  end
-
   def initialize
     @app_key = Rails.application.credentials.dig(:betfair, :app_key)
     @session_token = get_session_token
   end
 
-  # 1. Fetch the Matches
-  def list_soccer_events
+  def list_countries
     payload = {
       filter: {
         eventTypeIds: ["1"],
-        marketCountries: ["GB", "IE"],
+        # Syncing the time range with list_competitions
         marketStartTime: {
-          from: Time.now.utc.strftime("%Y-%m-%dT%H:%M:%SZ")
+          from: Time.now.utc.strftime("%Y-%m-%dT%H:%M:%SZ"),
+          to: 1.week.from_now.end_of_day.strftime("%Y-%m-%dT%H:%M:%SZ")
         }
       }
     }
-    post_request("listEvents/", payload)
+    post_request("listCountries/", payload)
+  end
+
+  # Fetch leagues (competitions) filtered by country codes
+  def list_competitions(country_codes = [])
+    payload = {
+      filter: {
+        eventTypeIds: ["1"],
+        marketCountries: Array(country_codes),
+        # Filter for matches starting between now and the end of today
+        marketStartTime: {
+          from: Time.now.utc.strftime("%Y-%m-%dT%H:%M:%SZ"),
+          to: 1.week.from_now.end_of_day.strftime("%Y-%m-%dT%H:%M:%SZ")
+        }
+      }
+    }
+    post_request("listCompetitions/", payload)
+  end
+
+  def fetch_match_odds_by_competition(competition_id)
+    payload = {
+      filter: {
+        eventTypeIds: ["1"],
+        competitionIds: [competition_id],
+        marketStartTime: { from: Time.now.utc.strftime("%Y-%m-%dT%H:%M:%SZ") }
+      }
+    }
+    events = post_request("listEvents/", payload)
+    fetch_match_odds_for_events(events) # Reuses your existing batching logic
   end
 
   # 2. High-level method to get Matches + Odds in one flow
