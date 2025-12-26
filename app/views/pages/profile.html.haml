@@ -1,0 +1,13 @@
+- content_for :title, "Your Stat Machine Profile"
+
+.section-profile.py-5
+  .container
+    .row.justify-content-center
+      .col-lg-8
+        %div.text-center.mb-4
+          %h1.fw-bold.mb-2 Secure Profile
+          %p.text-muted
+            Manage your Stat Machine identity through Firebase authentication.
+        #vue-app{ data: { props: @profile_props.to_json } }
+        %noscript
+          %p.text-danger.mt-3 Enable JavaScript to manage your profile.

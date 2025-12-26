@@ -1,106 +1,119 @@
--# app/views/pages/home.html.haml
+- content_for :title, "Stat Machine — Sports Predictions That Actually Beat The Closing Line"
 
-.container.py-4
-  .d-flex.justify-content-between.align-items-center.mb-4
-    %nav{ "aria-label" => "breadcrumb" }
-      %ol.breadcrumb.mb-0
-        %li.breadcrumb-item= link_to "World", root_path, class: "text-decoration-none"
-        - if params[:country]
-          %li.breadcrumb-item= link_to params[:country], root_path(country: params[:country]), class: "text-decoration-none"
-        - if params[:competition_id]
-          %li.breadcrumb-item.active League View
+%section.hero-landing.py-5.py-lg-6.text-white.position-relative
+  .home-auth-state{ data: { home_auth: true } }
+    .home-auth-inner.signed-out
+      %div
+        %p.eyebrow.mb-1 Secure access
+        %p.mb-0 Sign in to sync tickets and unlock tailored edges.
+      %button.btn.btn-outline-light.btn-sm{ type: "button" } Login
+  .hero-glow
+  .container.position-relative
+    .row.align-items-center.gy-5
+      .col-lg-6
+        %span.badge.bg-warning.text-dark.shadow-sm.fw-semibold.mb-3 Edge Tracker v3 Released
+        %h1.display-4.fw-bold.mb-3
+          Dominate upcoming sports events
+          %span.text-gradient with verified prediction edges
+        %p.lead.mb-4
+          Stat Machine aggregates sharp sportsbook data, AI projections, and market movement so you can lock in value bets before the rest of the world reacts.
+        .d-flex.flex-wrap.gap-3.mb-4
+          = link_to "See today's edge", stats_path, class: "btn btn-light btn-lg fw-semibold shadow-sm"
+          = link_to "Build my card", "#prediction-lab", class: "btn btn-outline-light btn-lg"
+        .d-flex.flex-wrap.gap-4
+          - @hero_metrics.each do |metric|
+            .metric-pill
+              %p.h3.mb-0= metric[:value]
+              %p.mb-0.small.text-white-50
+                %strong= metric[:label]
+                %br/
+                = metric[:caption]
+      .col-lg-6
+        .hero-card.shadow-strong.bg-dark.bg-opacity-50.p-4.rounded-4
+          %div.d-flex.justify-content-between.align-items-center.mb-3
+            %span.fw-semibold.text-uppercase.small.text-white-50 Next Up
+            %span.badge.bg-success.text-uppercase.fw-semibold Live edge
+          %h3.fw-bold.mb-1.text-white Premier AI Parlay Builder
+          %p.text-white-50.mb-4 3-leg slip surfaced from 15,302 live markets
+          .stacked-card.mb-3.p-3
+            %div.d-flex.justify-content-between.align-items-center.mb-3
+              %div
+                %p.text-white-50.mb-0 Premier League
+                %p.text-white.h5.mb-0 Arsenal vs. Chelsea
+              %div.text-end
+                %p.text-white-50.mb-0 Kickoff
+                %p.text-white.fw-semibold.mb-0 21:00 GMT
+            .progress.progress-thick.mb-3
+              .progress-bar.bg-gradient{ style: "width: 78%" }
+            .d-flex.justify-content-between
+              %span.text-white-50 Edge Confidence
+              %span.text-white.fw-semibold 93%
+          .d-flex.gap-3.flex-wrap
+            .signal-chip
+              %strong+11.4%
+              %span text vs. market
+            .signal-chip
+              %strong 0:18
+              %span reaction window
+            .signal-chip
+              %strong 27
+              %span sports synced
 
-    .d-flex.align-items-center.gap-3
-      #user-profile-nav
-      %button#sign-in-btn.btn.btn-sm.btn-primary.d-none{ type: "button" } Sign In
-      %button#sign-out-btn.btn.btn-sm.btn-outline-danger.d-none{ type: "button" } Sign Out
+%section.trust-band.py-4.bg-dark.text-white
+  .container
+    .d-flex.flex-wrap.justify-content-between.align-items-center.gap-3
+      %p.mb-0.small.text-uppercase.text-white-50 Trusted by smart bettors at
+      .logo-row.d-flex.flex-wrap.gap-4
+        - %w[SharpEdge BetIQ CoverCity ParlayLab LiveBook].each do |brand|
+          %span.logo-faux= brand
 
-  -# This container holds the Firebase UI
-  #firebaseui-auth-container
-  -# Legend (Only show when viewing matches)
-  - if @matches.present?
-    .mb-3.d-flex.gap-3.justify-content-center.small.text-muted{ style: "font-size: 0.75rem;" }
-      .d-flex.align-items-center.gap-1
-        .bg-primary.rounded-circle{ style: "width: 7px; height: 7px;" }
-        Home
-      .d-flex.align-items-center.gap-1
-        .bg-secondary.rounded-circle{ style: "width: 7px; height: 7px;" }
-        Draw
-      .d-flex.align-items-center.gap-1
-        .bg-success.rounded-circle{ style: "width: 7px; height: 7px;" }
-        Away
+%section#features.py-5.bg-light
+  .container
+    .row.align-items-center.gy-5
+      .col-lg-5
+        %p.text-uppercase.text-primary.fw-semibold.small Product
+        %h2.fw-bold.mb-3 Built for bettors who demand verified predictions
+        %p.text-muted.mb-4
+          Every recommendation is backed by proprietary probability models, real sportsbook odds, and historical matchup layers.
+        %ul.list-unstyled.gap-3.d-flex.flex-column
+          - @value_spots.each do |spot|
+            %li.d-flex.gap-3
+              %span.bullet-shine.mt-1
+              %div
+                %strong.d-block= spot[:label]
+                %span.text-muted= spot[:detail]
+      .col-lg-7
+        .row.g-4
+          - @feature_cards.each do |feature|
+            .col-md-4
+              .feature-card.h-100.p-4.rounded-4.shadow-sm.bg-white
+                %span.badge.bg-indigo.text-white.mb-3= feature[:badge]
+                %h5.fw-bold= feature[:title]
+                %p.text-muted.small.mb-0= feature[:body]
 
-  -# Stage 1: Country Selection
-  - if @countries.present?
-    .row.g-3
-      - @countries.sort_by { |c| c["countryCode"] }.each do |c|
-        .col-6.col-md-3.col-lg-2
-          = link_to root_path(country: c["countryCode"]), class: "card text-center p-3 text-decoration-none shadow-sm h-100 hover-elevate" do
-            .h5.mb-1.text-dark= c["countryCode"]
-            .small.text-muted= "#{c["marketCount"]} Events"
+%section#prediction-lab.py-5
+  .container
+    .row.g-4.align-items-center
+      .col-lg-5
+        %p.text-uppercase.text-success.fw-semibold.small Live Lab
+        %h2.fw-bold.mb-3 Tap into the prediction pulse
+        %p.text-muted.mb-4
+          The lab continuously refreshes as markets move. Plug into the pulse to see confidence, projected edge, and when to fire.
+        %div.d-flex.gap-3
+          %div.flex-grow-1.bg-dark.text-white.p-3.rounded-3.shadow-sm
+            %p.small.text-white-50.mb-1 Avg confidence
+            %p.h2.mb-0 86%
+          %div.flex-grow-1.bg-success.bg-opacity-10.p-3.rounded-3.shadow-sm
+            %p.small.text-success.mb-1 Avg value
+            %p.h2.mb-0.text-success +8.7%
+      .col-lg-7
+        #vue-app{ data: { props: { title: 'Live Prediction Pulse', predictions: @prediction_feed }.to_json } }
+        %noscript
+          %p.text-muted.mt-3 Activate JavaScript to view the live prediction feed.
 
-  -# Stage 2: Competition/League Selection
-  - if @competitions.present?
-    .list-group.shadow-sm
-      - @competitions.sort_by { |comp| comp.dig("competition", "name") }.each do |comp|
-        = link_to root_path(country: params[:country], competition_id: comp.dig("competition", "id")), class: "list-group-item list-group-item-action d-flex justify-content-between align-items-center py-3" do
-          %span.fw-bold= comp.dig("competition", "name")
-          %span.badge.bg-primary.rounded-pill= "#{comp["marketCount"]} Markets"
-
-  -# Stage 3: Compact Match Odds Table
-  - if @matches.present?
-    .card.border-0.shadow-sm.overflow-hidden
-      .table-responsive
-        %table.table.table-hover.align-middle.mb-0{ style: "table-layout: fixed;" }
-          %thead.bg-light
-            %tr.small.text-uppercase.text-muted.fw-bold
-              %th.ps-4.py-3{ style: "width: 20%;" } Kick Off
-              %th.py-3{ style: "width: 30%;" } Match
-              %th.py-3.text-center{ style: "width: 50%;" } Probabilities (H / D / A)
-
-          %tbody.border-top-0
-            - @matches.each do |match|
-              - percentages = ProbabilityCalculator.to_percentages(match[:runners])
-              %tr
-                %td.ps-4.py-2
-                  .small.fw-bold.text-muted{ style: "line-height: 1.2;" }
-                    %div= match[:kick_off].to_time.strftime("%a %d %b")
-                    .text-primary= match[:kick_off].to_time.strftime("%H:%M")
-
-                %td.py-2
-                  .d-flex.align-items-center.gap-2
-                    %span.fw-bold.text-dark.text-truncate{ style: "font-size: 0.9rem;" }
-                      = match[:event_name]
-                    - if match[:inplay]
-                      %span.badge.bg-danger.p-1.animate-pulse{ style: "font-size: 0.55rem;" } LIVE
-
-                %td.pe-4.py-2
-                  .progress{ style: "height: 22px; border-radius: 4px; background-color: #f1f3f5;" }
-                    - percentages.each_with_index do |data, idx|
-                      - bg_class = ['bg-primary', 'bg-secondary', 'bg-success'][idx]
-                      .progress-bar.border-end.border-white.border-1{ class: bg_class,
-                        role: "progressbar",
-                        style: "width: #{data[:percentage]}%",
-                        title: "#{data[:name]}: #{data[:percentage]}%" }
-
-                        - if data[:percentage] > 15
-                          %small.fw-bold{ style: "font-size: 0.7rem;" }= "#{data[:percentage]}%"
-
-  - if !@countries && !@competitions && !@matches
-    .text-center.py-5
-      %p.text-muted No events found for this selection.
-      = link_to "Return to World View", root_path, class: "btn btn-outline-primary"
-
-:css
-  .animate-pulse {
-    animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
-  }
-  @keyframes pulse {
-    0%, 100% { opacity: 1; }
-    50% { opacity: .5; }
-  }
-  .hover-elevate:hover {
-    transform: translateY(-3px);
-    transition: transform 0.2s ease;
-    background-color: #f8f9fa;
-  }
+%section.cta-wave.py-5.bg-indigo.text-white.text-center.rounded-4.mx-3.mx-lg-0.shadow-strong
+  .container
+    %p.text-uppercase.small.text-white-50 Beta Access
+    %h2.fw-bold.mb-3 Ready to bet with better intel?
+    %p.lead.mb-4 Sync your sportsbooks and Stat Machine calibrates projections to your slip.
+    = link_to "Create free edge report", stats_path, class: "btn btn-light btn-lg fw-semibold px-5"

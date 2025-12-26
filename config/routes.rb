@@ -1,6 +1,8 @@
 # config/routes.rb
 Rails.application.routes.draw do
   root "pages#home"
+  get "stats", to: "pages#stats"
+  get "profile", to: "pages#profile"
 
   namespace :api do
     namespace :v1 do
