@@ -9,12 +9,17 @@ class Api::V1::BaseController < ActionController::API
     @firebase_user = FirebaseAuthService.verify(token)
 
     # CRITICAL: Stop the request here if verification fails
-    if @firebase_user.nil?
-      render json: { error: 'Unauthorized', message: 'Invalid or expired token' }, status: :unauthorized
-    end
+    return if @firebase_user.present?
+
+    render json: { error: 'Unauthorized', message: 'Invalid or expired token' }, status: :unauthorized and return
   end
 
   def current_user
-    @firebase_user
+    return @current_user if defined?(@current_user)
+    return if @firebase_user.blank?
+
+    @current_user = User.from_firebase(@firebase_user)
+    @current_user.save! if @current_user.changed?
+    @current_user
   end
 end
