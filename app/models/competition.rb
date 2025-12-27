@@ -20,10 +20,11 @@ class Competition < ApplicationRecord
     for_country(country_code).ordered_by_name
   end
 
-  def self.sync_for_country!(country_code)
+  def self.sync_for_country!(country_code, api: nil)
     return [] unless country_code.present?
 
-    payloads = BetfairApi.new.list_competitions([country_code])
+    api ||= BetfairApi.new
+    payloads = api.list_competitions([country_code])
     payloads.filter_map do |payload|
       betfair_competition = payload["competition"] || {}
       betfair_id = betfair_competition["id"]

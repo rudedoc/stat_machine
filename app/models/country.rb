@@ -15,8 +15,9 @@ class Country < ApplicationRecord
     ordered
   end
 
-  def self.sync_all!
-    payloads = BetfairApi.new.list_countries
+  def self.sync_all!(api: nil)
+    api ||= BetfairApi.new
+    payloads = api.list_countries
     payloads.each do |payload|
       code = payload["countryCode"].presence
       next unless code

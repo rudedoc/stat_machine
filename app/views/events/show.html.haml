@@ -42,6 +42,7 @@
                 = "Updated #{time_ago_in_words(market.last_synced_label)} ago"
         .card-body
           - if market.competitors.any?
+            - total_percentage = market.competitors.sum { |competitor| competitor.latest_percentage.to_f }
             %table.table.table-sm.align-middle.mb-0
               %thead
                 %tr
@@ -63,6 +64,11 @@
                         = price.captured_at.in_time_zone.strftime("%d %b %H:%M")
                       - else
                         %span.text-muted —
+              %tfoot
+                %tr
+                  %th{ colspan: 1 } Total
+                  %th.text-end= "#{total_percentage.round(1)}%"
+                  %th
           - else
             %p.text-muted No runner data recorded for this market yet.
   - else

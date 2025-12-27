@@ -2,6 +2,20 @@ class BetfairApi
   BASE_URL = "https://api.betfair.com/exchange/betting/rest/v1.0/"
   LOGIN_URL = "https://identitysso.betfair.com/api/login"
 
+  def self.import_all_data!
+    api = new
+
+    Country.sync_all!(api: api)
+
+    Country.find_each do |country|
+      Competition.sync_for_country!(country.country_code, api: api)
+    end
+
+    Competition.find_each do |competition|
+      api.fetch_match_odds_by_competition(competition.betfair_id)
+    end
+  end
+
   def initialize
     @app_key = Rails.application.credentials.dig(:betfair, :app_key)
     @session_token = get_session_token
