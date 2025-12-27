@@ -3,6 +3,7 @@ class User < ApplicationRecord
 
   validates :firebase_uid, presence: true, uniqueness: true
   validates :email, format: { with: URI::MailTo::EMAIL_REGEXP }, allow_blank: true
+  validates :display_name, length: { maximum: 120 }, allow_blank: true
 
   class << self
     # Build or update a user record based on Firebase payload data.

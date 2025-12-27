@@ -4,7 +4,7 @@
       <p class="text-uppercase text-primary fw-semibold small mb-1">{{ heading }}</p>
       <h2 class="h4 fw-bold mb-2">{{ subheading }}</h2>
       <p class="text-muted mb-4">
-        Authenticate with Google to view your Stat Machine profile details pulled from the secure API.
+        Authenticate with Google to view and edit your Stat Machine profile stored in our API.
       </p>
 
       <div v-if="loading" class="text-center py-5">
@@ -25,9 +25,12 @@
           </button>
         </div>
 
-        <div v-else class="profile-card mb-3">
+        <div v-else class="profile-card">
           <div class="d-flex align-items-center gap-3 flex-wrap">
-            <div class="profile-avatar profile-avatar--fallback" aria-hidden="true">
+            <template v-if="hasAvatar">
+              <img :src="profileAvatar" alt="Profile picture" class="profile-avatar" />
+            </template>
+            <div v-else class="profile-avatar profile-avatar--fallback" aria-hidden="true">
               {{ avatarInitials }}
             </div>
             <div>
@@ -38,11 +41,55 @@
             <span class="badge bg-success-subtle text-success ms-auto px-3 py-2">Verified</span>
           </div>
 
-          <div class="d-flex flex-wrap gap-3 mt-4 profile-meta">
-            <button type="button" class="btn btn-danger" @click="signOutUser" :disabled="authenticating">
-              Sign out
-            </button>
-          </div>
+          <dl class="profile-meta">
+            <div>
+              <dt>UID</dt>
+              <dd>{{ profileUid }}</dd>
+            </div>
+            <div>
+              <dt>Authenticated</dt>
+              <dd>{{ lastAuthenticated }}</dd>
+            </div>
+            <div>
+              <dt>API Source</dt>
+              <dd>Firebase -> Rails API</dd>
+            </div>
+          </dl>
+
+          <form class="profile-form" @submit.prevent="submitProfileUpdate">
+            <div class="mb-3">
+              <label class="form-label fw-semibold">Display name</label>
+              <input v-model="form.displayName" type="text" class="form-control" maxlength="120" placeholder="Your name" />
+            </div>
+            <div class="mb-3">
+              <label class="form-label fw-semibold">Photo URL</label>
+              <input v-model="form.photoUrl" type="url" class="form-control" placeholder="https://example.com/avatar.jpg" />
+              <div class="form-text">Provide a link to your preferred avatar.</div>
+            </div>
+            <div class="d-flex flex-wrap gap-3 align-items-center">
+              <button type="submit" class="btn btn-primary" :disabled="updatingProfile">
+                <span v-if="!updatingProfile">Save changes</span>
+                <span v-else>
+                  <span class="spinner-border spinner-border-sm me-2" role="status" />
+                  Saving…
+                </span>
+              </button>
+              <button type="button" class="btn btn-outline-secondary" @click="refreshProfile" :disabled="fetchingProfile">
+                <span v-if="!fetchingProfile">Refresh profile</span>
+                <span v-else>
+                  <span class="spinner-border spinner-border-sm me-2" role="status" />
+                  Updating…
+                </span>
+              </button>
+              <button type="button" class="btn btn-danger ms-auto" @click="signOutUser" :disabled="authenticating">
+                Sign out
+              </button>
+            </div>
+            <p v-if="successMessage" class="text-success mt-3 mb-0">{{ successMessage }}</p>
+            <ul v-if="formErrors.length" class="text-danger mt-3 mb-0 ps-3">
+              <li v-for="(error, idx) in formErrors" :key="idx">{{ error }}</li>
+            </ul>
+          </form>
         </div>
       </template>
 
@@ -52,7 +99,7 @@
 </template>
 
 <script setup>
-import { computed, onBeforeUnmount, onMounted, ref } from 'vue'
+import { computed, onBeforeUnmount, onMounted, reactive, ref, watch } from 'vue'
 import { GoogleAuthProvider, onAuthStateChanged, signInWithPopup, signOut } from 'firebase/auth'
 import { auth } from '../../entrypoints/firebase_config'
 
@@ -73,6 +120,13 @@ const loading = ref(true)
 const errorMessage = ref('')
 const fetchingProfile = ref(false)
 const authenticating = ref(false)
+const updatingProfile = ref(false)
+const successMessage = ref('')
+const formErrors = ref([])
+const form = reactive({
+  displayName: '',
+  photoUrl: '',
+})
 let unsubscribe = null
 const provider = new GoogleAuthProvider()
 
@@ -97,6 +151,11 @@ const lastAuthenticated = computed(() => {
   return date.toLocaleString()
 })
 
+const syncForm = () => {
+  form.displayName = profile.value?.name || firebaseUser.value?.displayName || ''
+  form.photoUrl = profile.value?.picture || firebaseUser.value?.photoURL || ''
+}
+
 const fetchProfile = async (user) => {
   if (!props.profileEndpoint || !user) return
   fetchingProfile.value = true
@@ -112,6 +171,7 @@ const fetchProfile = async (user) => {
     }
 
     profile.value = await response.json()
+    successMessage.value = ''
   } catch (error) {
     errorMessage.value = error.message || 'Unexpected error loading profile'
   } finally {
@@ -119,7 +179,11 @@ const fetchProfile = async (user) => {
   }
 }
 
-const refreshProfile = () => fetchProfile(firebaseUser.value)
+const refreshProfile = () => {
+  successMessage.value = ''
+  formErrors.value = []
+  fetchProfile(firebaseUser.value)
+}
 
 const signIn = async () => {
   authenticating.value = true
@@ -139,10 +203,54 @@ const signOutUser = async () => {
   try {
     await signOut(auth)
     profile.value = null
+    successMessage.value = ''
+    formErrors.value = []
   } catch (error) {
     errorMessage.value = error.message || 'Sign out failed'
   } finally {
     authenticating.value = false
+  }
+}
+
+const submitProfileUpdate = async () => {
+  if (!firebaseUser.value) return
+  updatingProfile.value = true
+  formErrors.value = []
+  successMessage.value = ''
+
+  try {
+    const token = await firebaseUser.value.getIdToken()
+    const response = await fetch(props.profileEndpoint, {
+      method: 'PATCH',
+      headers: {
+        Authorization: `Bearer ${token}`,
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        profile: {
+          display_name: form.displayName,
+          photo_url: form.photoUrl,
+        },
+      }),
+    })
+
+    if (!response.ok) {
+      const data = await response.json().catch(() => ({}))
+      if (data.errors) {
+        formErrors.value = data.errors
+        return
+      }
+      throw new Error(data.message || 'Unable to update profile')
+    }
+
+    profile.value = await response.json()
+    successMessage.value = 'Profile updated successfully'
+  } catch (error) {
+    if (!formErrors.value.length) {
+      formErrors.value = [error.message || 'Unexpected error updating profile']
+    }
+  } finally {
+    updatingProfile.value = false
   }
 }
 
@@ -152,6 +260,8 @@ onMounted(() => {
     profile.value = null
     if (user) {
       fetchProfile(user)
+    } else {
+      syncForm()
     }
     loading.value = false
   })
@@ -159,6 +269,10 @@ onMounted(() => {
 
 onBeforeUnmount(() => {
   if (unsubscribe) unsubscribe()
+})
+
+watch(profile, () => {
+  syncForm()
 })
 </script>
 
@@ -178,7 +292,6 @@ onBeforeUnmount(() => {
   border: 1px solid rgba(15, 23, 42, 0.08);
   border-radius: 1.25rem;
   background-color: #f8fafc;
-  margin-bottom: 1.5rem;
 }
 
 .profile-avatar {
@@ -219,6 +332,14 @@ onBeforeUnmount(() => {
   margin: 0;
   font-weight: 600;
   color: #0f172a;
+}
+
+.profile-form .form-label {
+  color: #0f172a;
+}
+
+.profile-form .form-text {
+  color: #64748b;
 }
 
 .bg-success-subtle {

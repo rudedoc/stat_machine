@@ -75,7 +75,7 @@ class PagesController < ApplicationController
   def profile
     @profile_props = {
       component: 'profile-shell',
-      profile_endpoint: api_v1_profile_path,
+      profileEndpoint: api_v1_profile_path,
       copy: {
         heading: 'Your Stat Machine profile',
         subheading: 'Authenticate with Firebase to sync tickets and personalized insights.'

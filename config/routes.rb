@@ -6,7 +6,7 @@ Rails.application.routes.draw do
 
   namespace :api do
     namespace :v1 do
-      resource :profile, only: [:show]
+      resource :profile, only: [:show, :update]
       resources :countries, only: [:index] do
         resources :competitions, only: [:index] do
           resources :matches, only: [:index]
