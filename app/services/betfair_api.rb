@@ -37,7 +37,7 @@ class BetfairApi
     post_request("listCompetitions/", payload)
   end
 
-  def fetch_match_odds_by_competition(competition_id)
+  def fetch_match_odds_by_competition(competition_id, persist: true)
     payload = {
       filter: {
         eventTypeIds: ["1"],
@@ -46,12 +46,12 @@ class BetfairApi
       }
     }
     events = post_request("listEvents/", payload)
-    fetch_match_odds_for_events(events, competition_id) # Reuses your existing batching logic
+    fetch_match_odds_for_events(events, competition_id, persist: persist) # Reuses your existing batching logic
   end
 
   # 2. High-level method to get Matches + Odds in one flow
   # app/services/betfair_api.rb
-  def fetch_match_odds_for_events(events, competition_id = nil)
+  def fetch_match_odds_for_events(events, betfair_competition_id = nil, persist: true)
     event_ids = events.map { |e| e.dig("event", "id") }
     return [] if event_ids.empty?
 
@@ -61,18 +61,19 @@ class BetfairApi
     market_metadata = catalogues.each_with_object({}) do |cat, hash|
       hash[cat["marketId"]] = {
         event_name: cat.dig("event", "name"),
+        betfair_event_id: cat.dig("event", "id"),
         market_name: cat["marketName"],
         kick_off: cat.dig("event", "openDate"), # New field
         runners: cat["runners"].each_with_object({}) { |r, h| h[r["selectionId"]] = r["runnerName"] }
       }
     end
 
-    # Chunking logic...
     market_ids = market_metadata.keys
     market_books = []
     market_ids.each_slice(25) { |chunk| market_books += get_market_prices_batch(chunk) }
 
-    market_books.map do |book|
+    captured_at = Time.current
+    matches = market_books.map do |book|
       metadata = market_metadata[book["marketId"]]
       next unless metadata
 
@@ -81,15 +82,22 @@ class BetfairApi
 
       {
         event_name: metadata[:event_name],
+        betfair_event_id: metadata[:betfair_event_id],
         market_name: metadata[:market_name],
         kick_off: metadata[:kick_off], # Pass to final hash
         market_id: book["marketId"],
-        betfair_competition_id: competition_id,
+        betfair_competition_id: betfair_competition_id,
         status: book["status"],
         inplay: book["inplay"],
         runners: runner_percentages
       }
     end.compact
+
+    if persist && matches.any?
+      BetfairSnapshotPersister.new(matches: matches, captured_at: captured_at).persist!
+    end
+
+    matches
   end
 
   # 3. Intermediate: Find the "Match Odds" market IDs

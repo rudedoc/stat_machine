@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2025_12_26_235500) do
+ActiveRecord::Schema[8.1].define(version: 2025_12_27_103820) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
 
@@ -27,6 +27,50 @@ ActiveRecord::Schema[8.1].define(version: 2025_12_26_235500) do
     t.index ["country_code"], name: "index_competitions_on_country_code"
   end
 
+  create_table "events", force: :cascade do |t|
+    t.string "betfair_event_id", null: false
+    t.string "betfair_competition_id", null: false
+    t.string "name", null: false
+    t.datetime "kick_off", null: false
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["betfair_competition_id"], name: "index_events_on_betfair_competition_id"
+    t.index ["betfair_event_id"], name: "index_events_on_betfair_event_id", unique: true
+  end
+
+  create_table "markets", force: :cascade do |t|
+    t.bigint "event_id", null: false
+    t.string "betfair_market_id", null: false
+    t.string "name", null: false
+    t.string "status"
+    t.boolean "inplay", default: false, null: false
+    t.datetime "last_synced_at"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["betfair_market_id"], name: "index_markets_on_betfair_market_id", unique: true
+    t.index ["event_id"], name: "index_markets_on_event_id"
+  end
+
+  create_table "competitors", force: :cascade do |t|
+    t.bigint "market_id", null: false
+    t.string "selection_id", null: false
+    t.string "name", null: false
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["market_id", "selection_id"], name: "index_competitors_on_market_id_and_selection_id", unique: true
+    t.index ["market_id"], name: "index_competitors_on_market_id"
+  end
+
+  create_table "prices", force: :cascade do |t|
+    t.bigint "competitor_id", null: false
+    t.decimal "percentage", precision: 5, scale: 2, null: false
+    t.datetime "captured_at", null: false
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["competitor_id", "captured_at"], name: "index_prices_on_competitor_id_and_captured_at"
+    t.index ["competitor_id"], name: "index_prices_on_competitor_id"
+  end
+
   create_table "users", force: :cascade do |t|
     t.datetime "created_at", null: false
     t.string "display_name"
@@ -38,4 +82,8 @@ ActiveRecord::Schema[8.1].define(version: 2025_12_26_235500) do
     t.index ["email"], name: "index_users_on_email"
     t.index ["firebase_uid"], name: "index_users_on_firebase_uid", unique: true
   end
+
+  add_foreign_key "competitors", "markets"
+  add_foreign_key "markets", "events"
+  add_foreign_key "prices", "competitors"
 end

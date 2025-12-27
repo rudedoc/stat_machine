@@ -27,6 +27,7 @@ class ProbabilityCalculator
       normalized_prob = total_book > 0 ? (raw_probs[index] / total_book) * 100 : 0
 
       {
+        selection_id: runner[:selection_id],
         name: runner[:name],
         percentage: normalized_prob.round(1) # Rounding to 1 decimal for the tight UI
       }
