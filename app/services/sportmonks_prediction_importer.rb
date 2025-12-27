@@ -1,6 +1,7 @@
 # app/services/sportmonks_prediction_importer.rb
 class SportmonksPredictionImporter
   # Common Prediction Type IDs in v3
+
   VITAL_STATS = {
     expected_goals: 5304,
     ball_possession: 45,

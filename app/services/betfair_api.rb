@@ -1,6 +1,7 @@
 class BetfairApi
   BASE_URL = "https://api.betfair.com/exchange/betting/rest/v1.0/"
   LOGIN_URL = "https://identitysso.betfair.com/api/login"
+  SUPPORTED_COUNTRY_CODES = %w[GB PT IT BE FR ES].freeze
 
   def self.import_all_data!
     api = new
@@ -32,15 +33,20 @@ class BetfairApi
         }
       }
     }
-    post_request("listCountries/", payload)
+    post_request("listCountries/", payload).select do |country|
+      SUPPORTED_COUNTRY_CODES.include?(country["countryCode"])
+    end
   end
 
   # Fetch leagues (competitions) filtered by country codes
   def list_competitions(country_codes = [])
+    filtered_country_codes = filter_country_codes(country_codes)
+    return [] if filtered_country_codes.empty?
+
     payload = {
       filter: {
         eventTypeIds: ["1"],
-        marketCountries: Array(country_codes),
+        marketCountries: filtered_country_codes,
         # Filter for matches starting between now and the end of today
         marketStartTime: {
           from: Time.now.utc.strftime("%Y-%m-%dT%H:%M:%SZ"),
@@ -137,6 +143,12 @@ class BetfairApi
       priceProjection: { priceData: ["EX_BEST_OFFERS"] }
     }
     post_request("listMarketBook/", payload)
+  end
+
+  def filter_country_codes(country_codes)
+    codes = Array(country_codes).map { |code| code.to_s.strip.upcase }.reject(&:blank?)
+    codes = SUPPORTED_COUNTRY_CODES if codes.empty?
+    codes.uniq & SUPPORTED_COUNTRY_CODES
   end
 
   # Cleans up the complex nested price hash from Betfair

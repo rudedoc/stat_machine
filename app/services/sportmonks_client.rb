@@ -57,26 +57,30 @@ class SportmonksClient
   end
 
   def get_data(endpoint, params = {})
-    # Remove leading slash to prevent double slashes
+    # 1. Clean up the endpoint to remove leading slashes
     endpoint = endpoint.delete_prefix('/')
 
-    # Decide between /core and /football namespaces
+    # 2. Decide the namespace (Core vs Football)
     namespace = endpoint.start_with?('core', 'my') ? "" : "football/"
 
-    # Build the full path without over-encoding the slashes
-    path = "/v3/#{namespace}#{endpoint}"
+    # 3. Build the path WITHOUT repeating /v3
+    # Since base_uri already has /v3, we start the path from the namespace
+    path = "/#{namespace}#{endpoint}"
 
     options = {
       query: params.merge(api_token: @api_token),
       headers: { 'Accept' => 'application/json' }
     }
 
+    # Log the actual URL we are about to hit for debugging
+    # puts "Requesting: #{self.class.base_uri}#{path}"
+
     response = self.class.get(path, options)
 
     if response.success?
       JSON.parse(response.body)
     else
-      # Log the full path and error for better debugging
+      # Log the full failed path for better debugging
       Rails.logger.error "Sportmonks API Error [#{response.code}] on #{path}: #{response.body}"
       nil
     end

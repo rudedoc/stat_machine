@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2025_12_27_120000) do
+ActiveRecord::Schema[8.1].define(version: 2025_12_27_175456) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
 
@@ -58,6 +58,7 @@ ActiveRecord::Schema[8.1].define(version: 2025_12_27_120000) do
     t.datetime "created_at", null: false
     t.datetime "kick_off", null: false
     t.string "name", null: false
+    t.jsonb "predictions"
     t.integer "sportmonks_fixture_id"
     t.datetime "updated_at", null: false
     t.index ["betfair_competition_id"], name: "index_events_on_betfair_competition_id"
