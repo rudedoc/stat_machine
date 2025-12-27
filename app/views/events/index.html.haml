@@ -16,47 +16,37 @@
         %span.badge.bg-light.text-dark.ms-2= @country.country_code
 
   - if @events.present?
-    .card.border-0.shadow-sm.overflow-hidden
-      .table-responsive
-        %table.table.table-hover.align-middle.mb-0{ style: "table-layout: fixed;" }
-          %thead.bg-light
-            %tr.small.text-uppercase.text-muted.fw-bold
-              %th.ps-4.py-3{ style: "width: 15%;" } Kick Off
-              %th.py-3{ style: "width: 25%;" } Event
-              %th.py-3{ style: "width: 40%;" } Probabilities (H / D / A)
-              %th.text-center.py-3{ style: "width: 20%;" } Actions
-          %tbody.border-top-0
-            - @events.each do |event|
-              - market = event.primary_market
-              - percentages = market&.latest_probabilities || []
-              - kickoff = event.kick_off&.in_time_zone || event.kick_off
-              %tr
-                %td.ps-4.py-3
-                  - if kickoff
-                    %div.fw-semibold= kickoff.strftime("%a %d %b")
-                    .text-primary= kickoff.strftime("%H:%M")
-                  - else
-                    %span.text-muted TBD
-                %td.py-3
-                  %div.fw-bold.text-truncate= event.name
-                  - if market&.inplay?
-                    %span.badge.bg-danger.p-1.ms-1{ style: "font-size: 0.65rem;" } LIVE
-                  - if market&.status.present?
-                    %div.small.text-muted= "Status: #{market.status}"
-                %td.py-3
-                  - if percentages.present?
-                    .progress{ style: "height: 22px; border-radius: 4px; background-color: #f1f3f5;" }
-                      - percentages.each_with_index do |data, idx|
-                        - bg_class = ['bg-primary', 'bg-secondary', 'bg-success'][idx]
-                        .progress-bar.border-end.border-white.border-1{ class: bg_class,
-                          role: "progressbar",
-                          style: "width: #{data[:percentage]}%",
-                          title: "#{data[:name]}: #{data[:percentage]}%" }
-                          - if data[:percentage].to_f > 15
-                            %small.fw-bold{ style: "font-size: 0.7rem;" }= "#{data[:percentage]}%"
-                  - else
-                    %span.text-muted No prices yet
-                %td.text-center.py-3
-                  = link_to "View", country_competition_event_path(@country, @competition, event), class: "btn btn-sm btn-outline-primary"
+    .list-group.shadow-sm
+      - @events.each do |event|
+        - market = event.primary_market
+        - percentages = market&.latest_probabilities || []
+        - kickoff = event.kick_off&.in_time_zone || event.kick_off
+        = link_to country_competition_event_path(@country, @competition, event), class: "list-group-item list-group-item-action py-3" do
+          .d-flex.align-items-center.justify-content-between.flex-wrap.gap-3
+            .flex-grow-1
+              %div.d-flex.align-items-center.gap-2.mb-1
+                %strong.text-dark= event.name
+                - if market&.inplay?
+                  %span.badge.bg-danger.p-1{ style: "font-size: 0.65rem;" } LIVE
+              .small.text-muted
+                - if kickoff
+                  = kickoff.strftime("%a %d %b %H:%M")
+                - else
+                  = "TBD"
+                - if market&.status.present?
+                  = " · #{market.status}"
+            .flex-grow-1
+              - if percentages.present?
+                .progress{ style: "height: 18px; border-radius: 4px; background-color: #f1f3f5;" }
+                  - percentages.each_with_index do |data, idx|
+                    - bg_class = ['bg-primary', 'bg-secondary', 'bg-success'][idx]
+                    .progress-bar.border-end.border-white.border-1{ class: bg_class,
+                      role: "progressbar",
+                      style: "width: #{data[:percentage]}%",
+                      title: "#{data[:name]}: #{data[:percentage]}%" }
+                      - if data[:percentage].to_f > 15
+                        %small.fw-bold{ style: "font-size: 0.65rem;" }= "#{data[:percentage]}%"
+              - else
+                %span.text-muted.small No prices yet
   - else
     .alert.alert-warning No events have been recorded for this competition yet.
