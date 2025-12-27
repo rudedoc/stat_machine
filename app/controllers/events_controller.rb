@@ -29,7 +29,8 @@ class EventsController < ApplicationController
   end
 
   def event_scope
-    Event.where(betfair_competition_id: @competition.betfair_id)
+    Event.upcoming
+         .where(betfair_competition_id: @competition.betfair_id)
          .includes(markets: { competitors: :prices })
          .order(:kick_off)
   end

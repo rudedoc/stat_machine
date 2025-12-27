@@ -8,6 +8,9 @@ class Event < ApplicationRecord
   validates :betfair_event_id, presence: true, uniqueness: true
   validates :betfair_competition_id, :name, :kick_off, presence: true
 
+  scope :upcoming, -> { where('kick_off >= ?', Time.current) }
+  default_scope -> { upcoming }
+
   def primary_market
     markets.max_by { |market| market.last_synced_at || market.updated_at }
   end
