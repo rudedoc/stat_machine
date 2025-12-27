@@ -12,7 +12,11 @@ class Market < ApplicationRecord
       percentage = competitor.latest_percentage
       next unless percentage
 
-      { name: competitor.name, percentage: percentage }
+      {
+        selection_id: competitor.selection_id,
+        name: competitor.name,
+        percentage: percentage
+      }
     end.compact
   end
 
