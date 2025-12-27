@@ -1,9 +1,10 @@
 # app/controllers/api/v1/events_controller.rb
 class Api::V1::EventsController < Api::V1::BaseController
+  before_action :authenticate_firebase_user, only: :predictions
   before_action :set_country
   before_action :set_competition
   before_action :ensure_events!, only: :index
-  before_action :set_event, only: :show
+  before_action :set_event, only: [:show, :predictions]
 
   def index
     events = event_scope
@@ -12,6 +13,27 @@ class Api::V1::EventsController < Api::V1::BaseController
 
   def show
     render json: serialize_event(@event, include_markets: true)
+  end
+
+  def predictions
+    ensure_sportmonks_link!
+
+    if @event.sportmonks_fixture_id.blank?
+      render json: {
+        error: 'unlinked_fixture',
+        message: 'This event has not been linked to a Sportmonks fixture yet.'
+      }, status: :unprocessable_entity and return
+    end
+
+    profile = SportmonksClient.new.fixture_prediction_profile(@event.sportmonks_fixture_id)
+    if profile.blank?
+      render json: {
+        error: 'prediction_unavailable',
+        message: 'Prediction data is unavailable for the linked fixture at this time.'
+      }, status: :bad_gateway and return
+    end
+
+    render json: serialize_prediction_profile(profile)
   end
 
   private
@@ -91,5 +113,24 @@ class Api::V1::EventsController < Api::V1::BaseController
       latest_percentage: price&.percentage&.to_f,
       last_captured_at: price&.captured_at
     }
+  end
+
+  def serialize_prediction_profile(profile)
+    {
+      fixture_id: profile[:fixture_id],
+      event_name: profile[:name],
+      kick_off: profile[:kick_off],
+      league: profile[:league],
+      season: profile[:season],
+      predictions: profile[:predictions],
+      teams: profile[:teams]
+    }
+  end
+
+  def ensure_sportmonks_link!
+    return if @event.sportmonks_fixture_id.present?
+
+    SportmonksLinker.link_event!(@event)
+    @event.reload
   end
 end

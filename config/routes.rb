@@ -8,7 +8,11 @@ Rails.application.routes.draw do
       resource :profile, only: [:show, :update]
       resources :countries, only: [:index] do
         resources :competitions, only: [:index] do
-          resources :events, only: [:index, :show]
+          resources :events, only: [:index, :show] do
+            member do
+              get :predictions
+            end
+          end
         end
       end
     end

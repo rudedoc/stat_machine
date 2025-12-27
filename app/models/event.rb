@@ -18,4 +18,13 @@ class Event < ApplicationRecord
   def to_param
     betfair_event_id
   end
+
+  def sync_stats_for_event(event)
+    return unless event.sportmonks_fixture_id
+
+    data = SportmonksClient.new.fixture_stats(event.sportmonks_fixture_id)
+    stats = data.dig('data', 'statistics')
+
+    # Logic to save stats (e.g., event.update(external_stats: stats))
+  end
 end
