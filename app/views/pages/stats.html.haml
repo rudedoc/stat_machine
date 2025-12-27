@@ -33,16 +33,16 @@
   -# Stage 1: Country Selection
   - if @countries.present?
     .row.g-3
-      - @countries.sort_by { |c| c["countryCode"] }.each do |c|
+      - @countries.each do |country|
         .col-6.col-md-3.col-lg-2
-          = link_to stats_path(country: c["countryCode"]), class: "card text-center p-3 text-decoration-none shadow-sm h-100 hover-elevate" do
-            - display_flag = c["flag"].presence || c["countryCode"]
+          = link_to stats_path(country: country.country_code), class: "card text-center p-3 text-decoration-none shadow-sm h-100 hover-elevate" do
+            - display_flag = country.flag.presence || country.country_code
             .h4.mb-1= display_flag
-            .fw-bold.text-dark= c["name"] || c["countryCode"]
-            - metadata_parts = [c["countryCode"], c["region"], c["subregion"]].compact
+            .fw-bold.text-dark= country.name
+            - metadata_parts = [country.country_code, country.region, country.subregion].compact
             - if metadata_parts.any?
               .small.text-muted= metadata_parts.join(" / ")
-            .small.text-muted= pluralize(c["marketCount"], "Event")
+            .small.text-muted= pluralize(country.market_count, "Event")
 
   -# Stage 2: Competition/League Selection
   - if @competitions.present?

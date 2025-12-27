@@ -84,43 +84,15 @@ class PagesController < ApplicationController
   end
 
   def stats
-    api = BetfairApi.new
-
     if params[:country].present? && params[:competition_id].present?
       # Stage 3: Show matches for specific league
-      @matches = api.fetch_match_odds_by_competition(params[:competition_id])
+      @matches = BetfairApi.new.fetch_match_odds_by_competition(params[:competition_id])
     elsif params[:country].present?
       # Stage 2: Show leagues in selected country
       @competitions = Competition.ensure_synced_for_country!(params[:country])
     else
       # Stage 1: Show country choices with richer metadata from the countries gem
-      @countries = enrich_country_metadata(api.list_countries)
+      @countries = Country.ensure_synced!
     end
-  end
-
-  private
-
-  def enrich_country_metadata(countries)
-    countries.map do |country|
-      iso_country = ISO3166::Country[country["countryCode"]]
-      country.merge(
-        "name" => prettiest_country_name(iso_country, country["countryCode"]),
-        "flag" => iso_country&.respond_to?(:emoji_flag) ? iso_country.emoji_flag : nil,
-        "region" => iso_country&.region,
-        "subregion" => iso_country&.subregion
-      )
-    end
-  end
-
-  def prettiest_country_name(iso_country, fallback)
-    return fallback unless iso_country
-
-    translations = iso_country.respond_to?(:translations) ? iso_country.translations : nil
-    [
-      iso_country.try(:common_name),
-      iso_country.try(:iso_short_name),
-      translations&.dig("en"),
-      iso_country.try(:name)
-    ].find(&:present?) || fallback
   end
 end
