@@ -4,6 +4,7 @@ class Country < ApplicationRecord
   REFRESH_INTERVAL = 60.minutes
 
   has_many :competitions, primary_key: :country_code, foreign_key: :country_code
+  has_many :events, through: :competitions
 
   validates :country_code, presence: true, uniqueness: true
   validates :name, presence: true
@@ -26,7 +27,6 @@ class Country < ApplicationRecord
       record = find_or_initialize_by(country_code: code)
       record.assign_attributes(
         betfair_name: payload["name"],
-        market_count: payload["marketCount"].to_i,
         name: prettiest_country_name(iso_country, payload["name"], code),
         flag: iso_country&.respond_to?(:emoji_flag) ? iso_country.emoji_flag : nil,
         region: iso_country&.region,

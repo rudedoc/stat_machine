@@ -17,7 +17,7 @@
             - metadata_parts = [country.country_code, country.region, country.subregion].compact
             - if metadata_parts.any?
               .small.text-muted= metadata_parts.join(" / ")
-            .small.text-muted= pluralize(country.market_count, "Event")
+            .small.text-muted= pluralize(country.events.count, "Market")
   - else
     .text-center.py-5
       %p.text-muted Countries have not been synced yet.
