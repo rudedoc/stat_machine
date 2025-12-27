@@ -33,7 +33,6 @@ onAuthStateChanged(auth, async (user) => {
     // No user: Show Sign In, Hide Sign Out
     signInBtn?.classList.remove('d-none');
     signOutBtn?.classList.add('d-none');
-    document.getElementById('user-profile-nav').innerHTML = '';
   }
 });
 

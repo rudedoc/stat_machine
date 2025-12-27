@@ -119,14 +119,12 @@
 
 .home-auth-state {
   border: 1px solid rgba(255, 255, 255, 0.25);
-  border-radius: 1rem;
-  padding: 1rem 1.25rem;
+  border-radius: 0.875rem;
+  padding: 0.75rem 1rem;
   backdrop-filter: blur(6px);
-  max-width: 420px;
-  position: absolute;
-  top: 1.5rem;
-  right: clamp(1rem, 5vw, 5rem);
-  z-index: 5;
+  background: rgba(2, 6, 23, 0.45);
+  color: #fff;
+  min-width: 260px;
 }
 
 .home-auth-inner {
@@ -156,6 +154,13 @@
   color: rgba(255, 255, 255, 0.65);
 }
 
+@media (max-width: 991px) {
+  .home-auth-state {
+    width: 100%;
+    margin: 0 auto;
+  }
+}
+
 @media (max-width: 767px) {
   .metric-pill {
     width: 100%;
@@ -164,9 +169,8 @@
   .hero-landing {
     padding-top: 8rem;
   }
+}
 
-  .home-auth-state {
-    position: static;
-    margin: 0 auto 1.5rem;
-  }
+#firebaseui-auth-container:empty {
+  display: none;
 }

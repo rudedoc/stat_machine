@@ -1,0 +1,26 @@
+%nav.navbar.navbar-expand-lg.navbar-dark.bg-dark.shadow-sm.sticky-top
+  .container
+    = link_to root_path, class: "navbar-brand fw-semibold text-uppercase" do
+      Stat Machine
+    %button.navbar-toggler{ type: "button", data: { bs_toggle: "collapse", bs_target: "#primary-nav" }, aria: { controls: "primary-nav", expanded: "false", label: "Toggle navigation" } }
+      %span.navbar-toggler-icon
+    #primary-nav.collapse.navbar-collapse
+      %ul.navbar-nav.me-auto.mb-2.mb-lg-0
+        %li.nav-item
+          = link_to "Browse countries", countries_path, class: "nav-link #{'active' if current_page?(countries_path)}"
+        %li.nav-item.ms-3
+          = link_to "Profile", profile_path, class: ["nav-link", ("active" if current_page?(profile_path))].compact.join(" ")
+      .d-flex.flex-column.flex-lg-row.align-items-lg-center.gap-3.mt-3.mt-lg-0
+        .home-auth-state{ data: { home_auth: true } }
+          .home-auth-inner.signed-out
+            %div
+              %p.eyebrow.mb-1 Secure access
+              %p.mb-0 Sign in to sync tickets and unlock tailored edges.
+            %button.btn.btn-outline-light.btn-sm{ type: "button", data: { home_auth_login: true } }
+              Login
+        .d-flex.align-items-center.gap-2
+          %button#sign-in-btn.btn.btn-outline-light.btn-sm{ type: "button" }
+            Sign in
+          %button#sign-out-btn.btn.btn-outline-light.btn-sm.d-none{ type: "button" }
+            Sign out
+        = link_to "Browse countries", countries_path, class: "btn btn-primary btn-sm fw-semibold"

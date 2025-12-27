@@ -16,4 +16,8 @@
     = vite_client_tag
     = vite_javascript_tag 'application'
   %body
+    = render "shared/navbar"
+    .firebase-auth-shell
+      .container
+        #firebaseui-auth-container
     = yield

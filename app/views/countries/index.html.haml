@@ -1,10 +1,7 @@
 .container.py-4
-  .d-flex.justify-content-between.align-items-center.mb-4
-    %nav{ "aria-label" => "breadcrumb" }
-      %ol.breadcrumb.mb-0
-        %li.breadcrumb-item.active Countries
-    .d-flex.align-items-center.gap-3
-      #user-profile-nav
+  %nav{ "aria-label" => "breadcrumb" }
+    %ol.breadcrumb.mb-0
+      %li.breadcrumb-item.active Countries
 
   - if @countries.present?
     .row.g-3
