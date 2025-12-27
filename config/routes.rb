@@ -18,9 +18,11 @@ Rails.application.routes.draw do
     end
   end
 
-  resources :countries, only: [:index], param: :country_code do
-    resources :competitions, only: [:index] do
-      resources :events, only: [:index, :show]
-    end
+  ###
+
+  resources :countries, only: [:index, :show] do
+    resources :leagues, only: [:show]
   end
+
+  resources :fixtures, only: [:show]
 end

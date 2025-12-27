@@ -1,3 +1,4 @@
+# app/models/user.rb
 class User < ApplicationRecord
   before_validation :normalize_email
 

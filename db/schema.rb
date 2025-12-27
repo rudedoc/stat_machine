@@ -10,82 +10,155 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2025_12_27_175456) do
+ActiveRecord::Schema[8.1].define(version: 2025_12_27_211015) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
 
-  create_table "competitions", force: :cascade do |t|
-    t.string "betfair_id", null: false
-    t.string "competition_region"
-    t.string "country_code", null: false
+  create_table "bookmakers", force: :cascade do |t|
     t.datetime "created_at", null: false
-    t.string "name", null: false
-    t.integer "sportmonks_league_id"
-    t.datetime "synced_at"
+    t.integer "external_id"
+    t.string "name"
     t.datetime "updated_at", null: false
-    t.index ["betfair_id"], name: "index_competitions_on_betfair_id", unique: true
-    t.index ["country_code"], name: "index_competitions_on_country_code"
-  end
-
-  create_table "competitors", force: :cascade do |t|
-    t.datetime "created_at", null: false
-    t.bigint "market_id", null: false
-    t.string "name", null: false
-    t.string "selection_id", null: false
-    t.integer "sportmonks_team_id"
-    t.datetime "updated_at", null: false
-    t.index ["market_id", "selection_id"], name: "index_competitors_on_market_id_and_selection_id", unique: true
-    t.index ["market_id"], name: "index_competitors_on_market_id"
+    t.index ["external_id"], name: "index_bookmakers_on_external_id"
   end
 
   create_table "countries", force: :cascade do |t|
-    t.string "betfair_name"
-    t.string "country_code", null: false
     t.datetime "created_at", null: false
-    t.string "flag"
-    t.string "name", null: false
-    t.string "region"
-    t.integer "sportmonks_id"
-    t.string "subregion"
-    t.datetime "synced_at"
+    t.integer "external_id"
+    t.jsonb "extra_data"
+    t.string "image_path"
+    t.string "name"
     t.datetime "updated_at", null: false
-    t.index ["country_code"], name: "index_countries_on_country_code", unique: true
+    t.index ["external_id"], name: "index_countries_on_external_id"
   end
 
-  create_table "events", force: :cascade do |t|
-    t.string "betfair_competition_id", null: false
-    t.string "betfair_event_id", null: false
+  create_table "fixture_participants", force: :cascade do |t|
     t.datetime "created_at", null: false
-    t.datetime "kick_off", null: false
-    t.string "name", null: false
-    t.jsonb "predictions"
-    t.integer "sportmonks_fixture_id"
+    t.bigint "fixture_id", null: false
+    t.string "location"
+    t.bigint "participant_id", null: false
+    t.integer "position"
     t.datetime "updated_at", null: false
-    t.index ["betfair_competition_id"], name: "index_events_on_betfair_competition_id"
-    t.index ["betfair_event_id"], name: "index_events_on_betfair_event_id", unique: true
+    t.boolean "winner"
+    t.index ["fixture_id"], name: "index_fixture_participants_on_fixture_id"
+    t.index ["participant_id"], name: "index_fixture_participants_on_participant_id"
+  end
+
+  create_table "fixtures", force: :cascade do |t|
+    t.datetime "created_at", null: false
+    t.integer "external_id"
+    t.integer "external_venue_id"
+    t.bigint "league_id", null: false
+    t.string "leg"
+    t.string "name"
+    t.string "result_info"
+    t.integer "round_id"
+    t.bigint "season_id", null: false
+    t.integer "stage_id"
+    t.datetime "starting_at"
+    t.integer "state_id"
+    t.datetime "updated_at", null: false
+    t.index ["external_id"], name: "index_fixtures_on_external_id"
+    t.index ["league_id"], name: "index_fixtures_on_league_id"
+    t.index ["season_id"], name: "index_fixtures_on_season_id"
+  end
+
+  create_table "leagues", force: :cascade do |t|
+    t.boolean "active"
+    t.bigint "country_id", null: false
+    t.datetime "created_at", null: false
+    t.integer "external_id"
+    t.string "image_path"
+    t.string "name"
+    t.string "short_code"
+    t.bigint "sport_id", null: false
+    t.string "sub_type"
+    t.string "type"
+    t.datetime "updated_at", null: false
+    t.index ["country_id"], name: "index_leagues_on_country_id"
+    t.index ["external_id"], name: "index_leagues_on_external_id"
+    t.index ["sport_id"], name: "index_leagues_on_sport_id"
   end
 
   create_table "markets", force: :cascade do |t|
-    t.string "betfair_market_id", null: false
     t.datetime "created_at", null: false
-    t.bigint "event_id", null: false
-    t.boolean "inplay", default: false, null: false
-    t.datetime "last_synced_at"
-    t.string "name", null: false
-    t.string "status"
+    t.string "developer_name"
+    t.integer "external_id"
+    t.boolean "has_winning_calculations"
+    t.string "name"
     t.datetime "updated_at", null: false
-    t.index ["betfair_market_id"], name: "index_markets_on_betfair_market_id", unique: true
-    t.index ["event_id"], name: "index_markets_on_event_id"
+    t.index ["external_id"], name: "index_markets_on_external_id"
+  end
+
+  create_table "participants", force: :cascade do |t|
+    t.bigint "country_id", null: false
+    t.datetime "created_at", null: false
+    t.integer "external_id"
+    t.integer "founded"
+    t.string "gender"
+    t.string "image_path"
+    t.string "name"
+    t.boolean "placeholder"
+    t.string "short_code"
+    t.bigint "sport_id", null: false
+    t.string "type"
+    t.datetime "updated_at", null: false
+    t.index ["country_id"], name: "index_participants_on_country_id"
+    t.index ["external_id"], name: "index_participants_on_external_id"
+    t.index ["sport_id"], name: "index_participants_on_sport_id"
+  end
+
+  create_table "predictions", force: :cascade do |t|
+    t.datetime "created_at", null: false
+    t.integer "external_id"
+    t.bigint "fixture_id", null: false
+    t.jsonb "predictions"
+    t.integer "type_id"
+    t.datetime "updated_at", null: false
+    t.index ["external_id"], name: "index_predictions_on_external_id"
+    t.index ["fixture_id"], name: "index_predictions_on_fixture_id"
+    t.index ["type_id"], name: "index_predictions_on_type_id"
   end
 
   create_table "prices", force: :cascade do |t|
-    t.datetime "captured_at", null: false
-    t.bigint "competitor_id", null: false
+    t.bigint "bookmaker_id", null: false
     t.datetime "created_at", null: false
-    t.decimal "percentage", precision: 5, scale: 2, null: false
+    t.bigint "external_id"
+    t.bigint "fixture_id", null: false
+    t.string "handicap"
+    t.string "label"
+    t.bigint "market_id", null: false
+    t.string "probability"
+    t.boolean "stopped"
+    t.string "total"
     t.datetime "updated_at", null: false
-    t.index ["competitor_id", "captured_at"], name: "index_prices_on_competitor_id_and_captured_at"
-    t.index ["competitor_id"], name: "index_prices_on_competitor_id"
+    t.string "value"
+    t.boolean "winning"
+    t.index ["bookmaker_id"], name: "index_prices_on_bookmaker_id"
+    t.index ["external_id"], name: "index_prices_on_external_id"
+    t.index ["fixture_id"], name: "index_prices_on_fixture_id"
+    t.index ["market_id"], name: "index_prices_on_market_id"
+  end
+
+  create_table "seasons", force: :cascade do |t|
+    t.datetime "created_at", null: false
+    t.datetime "ending_at"
+    t.integer "external_id"
+    t.boolean "is_current"
+    t.bigint "league_id", null: false
+    t.string "name"
+    t.datetime "starting_at"
+    t.datetime "updated_at", null: false
+    t.index ["external_id"], name: "index_seasons_on_external_id"
+    t.index ["league_id"], name: "index_seasons_on_league_id"
+  end
+
+  create_table "sports", force: :cascade do |t|
+    t.datetime "created_at", null: false
+    t.integer "external_id"
+    t.string "name"
+    t.datetime "updated_at", null: false
+    t.index ["external_id"], name: "index_sports_on_external_id"
   end
 
   create_table "users", force: :cascade do |t|
@@ -100,7 +173,17 @@ ActiveRecord::Schema[8.1].define(version: 2025_12_27_175456) do
     t.index ["firebase_uid"], name: "index_users_on_firebase_uid", unique: true
   end
 
-  add_foreign_key "competitors", "markets"
-  add_foreign_key "markets", "events"
-  add_foreign_key "prices", "competitors"
+  add_foreign_key "fixture_participants", "fixtures"
+  add_foreign_key "fixture_participants", "participants"
+  add_foreign_key "fixtures", "leagues"
+  add_foreign_key "fixtures", "seasons"
+  add_foreign_key "leagues", "countries"
+  add_foreign_key "leagues", "sports"
+  add_foreign_key "participants", "countries"
+  add_foreign_key "participants", "sports"
+  add_foreign_key "predictions", "fixtures"
+  add_foreign_key "prices", "bookmakers"
+  add_foreign_key "prices", "fixtures"
+  add_foreign_key "prices", "markets"
+  add_foreign_key "seasons", "leagues"
 end

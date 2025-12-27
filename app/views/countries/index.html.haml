@@ -1,28 +1,24 @@
-.container.py-4
-  %nav{ "aria-label" => "breadcrumb" }
-    %ol.breadcrumb.mb-0
-      %li.breadcrumb-item.active Countries
+-# app/views/countries/index.html.haml
+.container.mt-4
+  .row.justify-content-center
+    .col-md-8
+      .d-flex.justify-content-between.align-items-center.mb-4
+        %h1.h2 Browse by Country
+        %span.badge.bg-secondary.rounded-pill
+          = pluralize(@countries.count, 'Country')
 
-  - if @countries.present?
-    .row.g-3
-      - @countries.each do |country|
-        .col-6.col-md-3.col-lg-2
-          = link_to country_competitions_path(country), class: "card text-center p-3 text-decoration-none shadow-sm h-100 hover-elevate" do
-            - display_flag = country.flag.presence || country.country_code
-            .h4.mb-1= display_flag
-            .fw-bold.text-dark= country.name
-            - metadata_parts = [country.country_code, country.region, country.subregion].compact
-            - if metadata_parts.any?
-              .small.text-muted= metadata_parts.join(" / ")
-            .small.text-muted= pluralize(country.events.count, "Event")
-  - else
-    .text-center.py-5
-      %p.text-muted Countries have not been synced yet.
-      = link_to "Refresh countries", countries_path, class: "btn btn-outline-primary"
+      .list-group.shadow-sm
+        - @countries.each do |country|
+          = link_to country_path(country), class: 'list-group-item list-group-item-action d-flex align-items-center py-3' do
+            - if country.image_path.present?
+              %img.me-3{ src: country.image_path, style: 'width: 32px; height: auto;', alt: "#{country.name} flag" }
+            - else
+              .me-3.bg-light.text-muted.text-center{ style: 'width: 32px; line-height: 24px; border: 1px solid #dee2e6;' }
+                ?
 
-:css
-  .hover-elevate:hover {
-    transform: translateY(-3px);
-    transition: transform 0.2s ease;
-    background-color: #f8f9fa;
-  }
+            %div
+              %h5.mb-0= country.name
+              %small.text-muted
+                = pluralize(country.leagues.count, 'League')
+
+            %i.bi.bi-chevron-right.ms-auto.text-muted

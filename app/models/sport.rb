@@ -1,5 +1,5 @@
-# app/models/country.rb
-class Country < ApplicationRecord
+# app/models/sport.rb
+class Sport < ApplicationRecord
   validates :external_id, presence: true, uniqueness: true
   validates :name, presence: true
 

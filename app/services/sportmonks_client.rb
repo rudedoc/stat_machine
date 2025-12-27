@@ -6,8 +6,11 @@ class SportmonksClient
     @api_token = Rails.application.credentials.dig(:sportmonks, :api_token)
   end
 
-  def get_fixtures_by_date(date, includes: [])
-    query = { api_token: @api_token }
+  def get_fixtures_by_date(date, includes: [], page: 1)
+    query = {
+      api_token: @api_token,
+      page: page
+    }
     query[:include] = includes.join(';') if includes.any?
 
     response = Faraday.get("#{BASE_URL}/fixtures/date/#{date}", query)
