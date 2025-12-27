@@ -7,10 +7,12 @@ class Api::V1::MatchesController < ActionController::API
     response = matches.map do |match|
       {
         event_name: match[:event_name],
+        market_name: match[:market_name],
+        competition_id: match[:competition_id],
         kick_off: match[:kick_off],
         inplay: match[:inplay],
         market_id: match[:market_id],
-        probabilities: ProbabilityCalculator.to_percentages(match[:runners])
+        probabilities: match[:runners]
       }
     end
 

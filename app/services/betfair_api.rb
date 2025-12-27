@@ -46,12 +46,12 @@ class BetfairApi
       }
     }
     events = post_request("listEvents/", payload)
-    fetch_match_odds_for_events(events) # Reuses your existing batching logic
+    fetch_match_odds_for_events(events, competition_id) # Reuses your existing batching logic
   end
 
   # 2. High-level method to get Matches + Odds in one flow
   # app/services/betfair_api.rb
-  def fetch_match_odds_for_events(events)
+  def fetch_match_odds_for_events(events, competition_id = nil)
     event_ids = events.map { |e| e.dig("event", "id") }
     return [] if event_ids.empty?
 
@@ -61,6 +61,7 @@ class BetfairApi
     market_metadata = catalogues.each_with_object({}) do |cat, hash|
       hash[cat["marketId"]] = {
         event_name: cat.dig("event", "name"),
+        market_name: cat["marketName"],
         kick_off: cat.dig("event", "openDate"), # New field
         runners: cat["runners"].each_with_object({}) { |r, h| h[r["selectionId"]] = r["runnerName"] }
       }
@@ -75,13 +76,18 @@ class BetfairApi
       metadata = market_metadata[book["marketId"]]
       next unless metadata
 
+      runner_prices = parse_runners_with_names(book["runners"], metadata[:runners])
+      runner_percentages = ProbabilityCalculator.to_percentages(runner_prices)
+
       {
         event_name: metadata[:event_name],
+        market_name: metadata[:market_name],
         kick_off: metadata[:kick_off], # Pass to final hash
         market_id: book["marketId"],
+        betfair_competition_id: competition_id,
         status: book["status"],
         inplay: book["inplay"],
-        runners: parse_runners_with_names(book["runners"], metadata[:runners])
+        runners: runner_percentages
       }
     end.compact
   end
