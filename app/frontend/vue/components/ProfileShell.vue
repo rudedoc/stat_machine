@@ -2,10 +2,6 @@
   <section class="profile-shell">
     <div class="p-4">
       <p class="text-uppercase text-primary fw-semibold small mb-1">{{ heading }}</p>
-      <h2 class="h4 fw-bold mb-2">{{ subheading }}</h2>
-      <p class="text-muted mb-4">
-        Authenticate with Google to view and edit your Stat Machine profile stored in our API.
-      </p>
 
       <div v-if="loading" class="text-center py-5">
         <div class="spinner-border text-primary mb-3" role="status" />
@@ -40,21 +36,6 @@
             </div>
             <span class="badge bg-success-subtle text-success ms-auto px-3 py-2">Verified</span>
           </div>
-
-          <dl class="profile-meta">
-            <div>
-              <dt>UID</dt>
-              <dd>{{ profileUid }}</dd>
-            </div>
-            <div>
-              <dt>Authenticated</dt>
-              <dd>{{ lastAuthenticated }}</dd>
-            </div>
-            <div>
-              <dt>API Source</dt>
-              <dd>Firebase -> Rails API</dd>
-            </div>
-          </dl>
 
           <form class="profile-form" @submit.prevent="submitProfileUpdate">
             <div class="mb-3">
