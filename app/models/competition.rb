@@ -1,0 +1,50 @@
+# frozen_string_literal: true
+
+class Competition < ApplicationRecord
+  REFRESH_INTERVAL = 60.seconds
+
+  validates :betfair_id, presence: true, uniqueness: true
+  validates :name, :country_code, presence: true
+
+  scope :for_country, ->(country_code) { where(country_code: country_code) if country_code.present? }
+  scope :ordered_by_name, -> { order(Arel.sql("LOWER(name) ASC")) }
+
+  def self.ensure_synced_for_country!(country_code, max_age: REFRESH_INTERVAL)
+    return none unless country_code.present?
+
+    sync_for_country!(country_code) if needs_refresh_for_country?(country_code, max_age: max_age)
+
+    for_country(country_code).ordered_by_name
+  end
+
+  def self.sync_for_country!(country_code)
+    return [] unless country_code.present?
+
+    payloads = BetfairApi.new.list_competitions([country_code])
+    payloads.filter_map do |payload|
+      betfair_competition = payload["competition"] || {}
+      betfair_id = betfair_competition["id"]
+      next unless betfair_id.present?
+
+      record = find_or_initialize_by(betfair_id: betfair_id)
+      record.assign_attributes(
+        name: betfair_competition["name"],
+        market_count: payload["marketCount"],
+        competition_region: payload["competitionRegion"],
+        country_code: country_code,
+        synced_at: Time.current
+      )
+      record.save!
+      record
+    end
+  end
+
+  def self.needs_refresh_for_country?(country_code, max_age: REFRESH_INTERVAL)
+    relation = for_country(country_code)
+    return true unless relation.exists?
+
+    return false unless max_age
+
+    relation.where("synced_at IS NULL OR synced_at < ?", max_age.ago).exists?
+  end
+end
