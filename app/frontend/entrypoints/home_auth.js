@@ -36,7 +36,7 @@ const initHomeAuth = () => {
       <div class="home-auth-inner signed-in">
         <div>
           <p class="eyebrow mb-1">Welcome</p>
-          <p class="mb-0">${name}, your profile is ready.</p>
+          <p class="mb-0">${name}</p>
         </div>
         <a class="btn btn-light btn-sm" href="/profile">Profile</a>
       </div>
