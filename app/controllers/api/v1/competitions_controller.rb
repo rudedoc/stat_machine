@@ -7,8 +7,6 @@ class Api::V1::CompetitionsController < Api::V1::BaseController
                    else
                      Competition.none
                    end
-    render json: competitions.as_json(
-      only: %i[betfair_id name country_code competition_region market_count synced_at]
-    )
+    render json: competitions
   end
 end
