@@ -2,7 +2,6 @@
 import { auth } from "./firebase_config";
 import { onAuthStateChanged, signOut } from "firebase/auth";
 import * as firebaseui from "firebaseui";
-import "firebaseui/dist/firebaseui.css";
 import { EmailAuthProvider, GoogleAuthProvider } from "firebase/auth";
 
 const ui = new firebaseui.auth.AuthUI(auth);

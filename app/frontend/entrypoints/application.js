@@ -1,7 +1,6 @@
 import "./auth";
 import "./home_auth";
 import 'bootstrap/dist/js/bootstrap.bundle.js'
-import './application.scss'
 
 import { createApp } from 'vue'
 import App from '../vue/App.vue'

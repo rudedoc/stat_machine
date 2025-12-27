@@ -23,7 +23,7 @@ const initHomeAuth = () => {
       <div class="home-auth-inner signed-out">
         <div>
           <p class="eyebrow mb-1">Secure access</p>
-          <p class="mb-0">Sign in to sync tickets and unlock tailored edges.</p>
+          <p class="mb-0">Sign in</p>
         </div>
         <button class="btn btn-outline-light btn-sm" data-home-auth-login type="button">Login</button>
       </div>
