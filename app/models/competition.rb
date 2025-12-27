@@ -33,7 +33,6 @@ class Competition < ApplicationRecord
       record = find_or_initialize_by(betfair_id: betfair_id)
       record.assign_attributes(
         name: betfair_competition["name"],
-        market_count: payload["marketCount"],
         competition_region: payload["competitionRegion"],
         country_code: country_code,
         synced_at: Time.current

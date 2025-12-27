@@ -15,6 +15,6 @@
           .text-start
             %span.fw-bold= competition.name
             %div.text-muted.small= "Betfair ID: #{competition.betfair_id}"
-          %span.badge.bg-primary.rounded-pill= "#{competition.market_count} Markets"
+          %span.badge.bg-primary.rounded-pill= pluralize(competition.events.count, "Event")
   - else
     .alert.alert-warning No competitions have been synced for this country yet.

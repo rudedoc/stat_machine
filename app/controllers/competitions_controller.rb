@@ -3,7 +3,7 @@ class CompetitionsController < ApplicationController
   before_action :set_country
 
   def index
-    @competitions = Competition.ensure_synced_for_country!(@country.country_code)
+    @competitions = Competition.ensure_synced_for_country!(@country.country_code).includes(:events)
   end
 
   private
