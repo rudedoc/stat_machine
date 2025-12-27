@@ -3,6 +3,9 @@
 class Competition < ApplicationRecord
   REFRESH_INTERVAL = 60.seconds
 
+  belongs_to :country, primary_key: :country_code, foreign_key: :country_code, optional: true
+  has_many :events, primary_key: :betfair_id, foreign_key: :betfair_competition_id
+
   validates :betfair_id, presence: true, uniqueness: true
   validates :name, :country_code, presence: true
 
@@ -46,5 +49,9 @@ class Competition < ApplicationRecord
     return false unless max_age
 
     relation.where("synced_at IS NULL OR synced_at < ?", max_age.ago).exists?
+  end
+
+  def to_param
+    betfair_id
   end
 end

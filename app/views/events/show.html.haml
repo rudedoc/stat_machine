@@ -1,0 +1,69 @@
+.container.py-4
+  %nav{ "aria-label" => "breadcrumb" }
+    %ol.breadcrumb.mb-4
+      %li.breadcrumb-item= link_to "Countries", countries_path, class: "text-decoration-none"
+      - if @country
+        %li.breadcrumb-item= link_to @country.name, country_competitions_path(@country), class: "text-decoration-none"
+      - if @competition
+        %li.breadcrumb-item= link_to @competition.name, country_competition_events_path(@country, @competition), class: "text-decoration-none"
+      %li.breadcrumb-item.active= @event.name
+
+  %header.mb-4
+    %h1.h3.mb-2= @event.name
+    %div.text-muted
+      - kickoff = @event.kick_off&.in_time_zone || @event.kick_off
+      - if kickoff
+        %span.me-3
+          %strong Kick Off:
+          = kickoff.strftime("%a %d %b %H:%M %Z")
+      - if @competition
+        %span.me-3
+          %strong Competition:
+          = @competition.name
+      - if @country
+        %span
+          %strong Country:
+          = @country.name
+
+  - if @markets.present?
+    - @markets.each do |market|
+      .card.mb-4.shadow-sm
+        .card-header.d-flex.justify-content-between.align-items-center
+          %div
+            %h2.h5.mb-0= market.name
+            %small.text-muted= "Betfair Market ID: #{market.betfair_market_id}"
+          %div.text-end
+            - if market.inplay?
+              %span.badge.bg-danger me-2 LIVE
+            - if market.status.present?
+              %span.badge.bg-secondary= market.status
+            - if market.last_synced_label
+              %div.small.text-muted.mt-1
+                = "Updated #{time_ago_in_words(market.last_synced_label)} ago"
+        .card-body
+          - if market.competitors.any?
+            %table.table.table-sm.align-middle.mb-0
+              %thead
+                %tr
+                  %th Competitor
+                  %th.text-end Probability
+                  %th.text-end Last Captured
+              %tbody
+                - market.competitors.each do |competitor|
+                  - price = competitor.latest_price
+                  %tr
+                    %td.fw-semibold= competitor.name
+                    %td.text-end
+                      - if price&.percentage
+                        = "#{price.percentage.to_f.round(1)}%"
+                      - else
+                        %span.text-muted Pending
+                    %td.text-end
+                      - if price&.captured_at
+                        = price.captured_at.in_time_zone.strftime("%d %b %H:%M")
+                      - else
+                        %span.text-muted —
+          - else
+            %p.text-muted No runner data recorded for this market yet.
+  - else
+    .alert.alert-info No markets have been captured for this event yet.

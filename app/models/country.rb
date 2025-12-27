@@ -3,6 +3,8 @@
 class Country < ApplicationRecord
   REFRESH_INTERVAL = 60.minutes
 
+  has_many :competitions, primary_key: :country_code, foreign_key: :country_code
+
   validates :country_code, presence: true, uniqueness: true
   validates :name, presence: true
 
@@ -53,5 +55,9 @@ class Country < ApplicationRecord
       fallback_name,
       country_code
     ].find(&:present?)
+  end
+
+  def to_param
+    country_code
   end
 end

@@ -18,7 +18,7 @@
         %p.lead.mb-4
           Stat Machine aggregates sharp sportsbook data, AI projections, and market movement so you can lock in value bets before the rest of the world reacts.
         .d-flex.flex-wrap.gap-3.mb-4
-          = link_to "See today's edge", stats_path, class: "btn btn-light btn-lg fw-semibold shadow-sm"
+          = link_to "See today's edge", countries_path, class: "btn btn-light btn-lg fw-semibold shadow-sm"
           = link_to "Build my card", "#prediction-lab", class: "btn btn-outline-light btn-lg"
         .d-flex.flex-wrap.gap-4
           - @hero_metrics.each do |metric|
@@ -116,4 +116,4 @@
     %p.text-uppercase.small.text-white-50 Beta Access
     %h2.fw-bold.mb-3 Ready to bet with better intel?
     %p.lead.mb-4 Sync your sportsbooks and Stat Machine calibrates projections to your slip.
-    = link_to "Create free edge report", stats_path, class: "btn btn-light btn-lg fw-semibold px-5"
+    = link_to "Create free edge report", countries_path, class: "btn btn-light btn-lg fw-semibold px-5"

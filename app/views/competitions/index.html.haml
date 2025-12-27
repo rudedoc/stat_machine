@@ -1,0 +1,20 @@
+.container.py-4
+  %nav{ "aria-label" => "breadcrumb" }
+    %ol.breadcrumb.mb-4
+      %li.breadcrumb-item= link_to "Countries", countries_path, class: "text-decoration-none"
+      %li.breadcrumb-item.active= @country.name
+
+  .d-flex.justify-content-between.align-items-center.mb-3
+    %h2.h4.mb-0= "Leagues in #{@country.name}"
+    %span.badge.bg-secondary= @country.country_code
+
+  - if @competitions.present?
+    .list-group.shadow-sm
+      - @competitions.each do |competition|
+        = link_to country_competition_events_path(@country, competition), class: "list-group-item list-group-item-action d-flex justify-content-between align-items-center py-3" do
+          .text-start
+            %span.fw-bold= competition.name
+            %div.text-muted.small= "Betfair ID: #{competition.betfair_id}"
+          %span.badge.bg-primary.rounded-pill= "#{competition.market_count} Markets"
+  - else
+    .alert.alert-warning No competitions have been synced for this country yet.

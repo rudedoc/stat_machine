@@ -82,17 +82,4 @@ class PagesController < ApplicationController
       }
     }
   end
-
-  def stats
-    if params[:country].present? && params[:competition_id].present?
-      # Stage 3: Show matches for specific league
-      @matches = BetfairApi.new.fetch_match_odds_by_competition(params[:competition_id])
-    elsif params[:country].present?
-      # Stage 2: Show leagues in selected country
-      @competitions = Competition.ensure_synced_for_country!(params[:country])
-    else
-      # Stage 1: Show country choices with richer metadata from the countries gem
-      @countries = Country.ensure_synced!
-    end
-  end
 end
