@@ -9,9 +9,16 @@
       %li.breadcrumb-item.active= @event.name
 
   %header.mb-4
-    .d-flex.justify-content-between.align-items-start
+    .d-flex.justify-content-between.align-items-center
       %div
-        %h1.h3.mb-2= @event.name
+        .d-flex.align-items-center.mb-2
+          - if @event.predictions.present?
+            %img.me-2{ src: @event.predictions.dig('teams', 'home', 'logo'), width: '40', height: '40', alt: 'Home Badge' }
+            %h1.h3.mb-0.mx-2 VS
+            %img.ms-2{ src: @event.predictions.dig('teams', 'away', 'logo'), width: '40', height: '40', alt: 'Away Badge' }
+          - else
+            %h1.h3.mb-0= @event.name
+        
         %div.text-muted
           - kickoff = @event.kick_off&.in_time_zone || @event.kick_off
           - if kickoff
@@ -22,13 +29,13 @@
             %span.me-3
               %strong Competition:
               = @competition.name
+
       - if @event.predictions.present?
         .text-end
           .badge.bg-primary.p-2
             AI Advice:
             = @event.predictions.dig('predictions', 'advice')
 
-  -# --- NEW: AI PREDICTIONS DASHBOARD ---
   - if @event.predictions.present?
     - pred = @event.predictions
     - home_stats = pred.dig('teams', 'home')
