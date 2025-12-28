@@ -32,113 +32,171 @@
 
       - if @event.predictions.present?
         .text-end
-          .badge.bg-primary.p-2
+          .badge.bg-primary.p-2.shadow-sm
+            %i.bi.bi-cpu-fill.me-1
             AI Advice:
             = @event.predictions.dig('predictions', 'advice')
 
   - if @event.predictions.present?
     - pred = @event.predictions
-    - home_stats = pred.dig('teams', 'home')
-    - away_stats = pred.dig('teams', 'away')
-    - comparison = pred['comparison']
+    - home = pred.dig('teams', 'home')
+    - away = pred.dig('teams', 'away')
+    - comp = pred['comparison']
 
+    -# --- SECTION 1: PROBABILITY & COMPARISON ---
     .row.mb-4
-      -# 1. Win Probability Comparison
       .col-md-4
         .card.h-100.shadow-sm
-          .card-header.bg-light
-            %strong.small AI Win Probability
+          .card-header.bg-light.fw-bold.small AI Win Probability
           .card-body
             - perc = pred.dig('predictions', 'percent')
             .d-flex.justify-content-between.mb-1.small
-              %span= home_stats['name']
+              %span= home['name']
               %span= perc['home']
-            .progress.mb-3{ style: "height: 10px;" }
-              .progress-bar.bg-success{ role: "progressbar", style: "width: #{perc['home']}" }
-              .progress-bar.bg-secondary{ role: "progressbar", style: "width: #{perc['draw']}" }
-              .progress-bar.bg-info{ role: "progressbar", style: "width: #{perc['away']}" }
+            .progress.mb-3{ style: "height: 12px; border-radius: 10px;" }
+              .progress-bar.bg-success{ style: "width: #{perc['home']}" }
+              .progress-bar.bg-secondary{ style: "width: #{perc['draw']}" }
+              .progress-bar.bg-info{ style: "width: #{perc['away']}" }
             .d-flex.justify-content-between.small.text-muted
               %span Draw: #{perc['draw']}
-              %span= "#{away_stats['name']}: #{perc['away']}"
+              %span= "#{away['name']}: #{perc['away']}"
 
-      -# 2. Tale of the Tape (Comparison)
       .col-md-4
         .card.h-100.shadow-sm
-          .card-header.bg-light
-            %strong.small Statistical Advantage
+          .card-header.bg-light.fw-bold.small Statistical Advantage
           .card-body.py-2
-            - ['att', 'def', 'form', 'poisson_distribution'].each do |attr|
+            - ['att', 'def', 'poisson_distribution', 'h2h'].each do |attr|
               .mb-2
-                .d-flex.justify-content-between.very-small.text-uppercase.fw-bold{ style: "font-size: 0.7rem;" }
+                .d-flex.justify-content-between.very-small.text-uppercase.fw-bold{ style: "font-size: 0.65rem;" }
                   %span= attr.humanize
-                .progress{ style: "height: 6px; background-color: #e9ecef;" }
-                  .progress-bar.bg-primary{ style: "width: #{comparison.dig(attr, 'home')}" }
-                  .progress-bar.bg-info.opacity-50{ style: "width: #{comparison.dig(attr, 'away')}" }
+                .progress{ style: "height: 6px; background-color: #f0f0f0;" }
+                  .progress-bar.bg-primary{ style: "width: #{comp.dig(attr, 'home')}" }
+                  .progress-bar.bg-info.opacity-50{ style: "width: #{comp.dig(attr, 'away')}" }
 
-      -# 3. Recent Form & H2H
       .col-md-4
         .card.h-100.shadow-sm
-          .card-header.bg-light
-            %strong.small Head to Head (Last 5)
+          .card-header.bg-light.fw-bold.small Head to Head History
           .card-body.p-0
             %ul.list-group.list-group-flush.small
               - pred['h2h'].first(5).each do |game|
                 %li.list-group-item.py-1.d-flex.justify-content-between
-                  %span= game.dig('fixture', 'date').to_date.strftime('%b %y')
+                  %span.text-muted= game.dig('fixture', 'date').to_date.strftime('%b %y')
                   %span.fw-bold
                     = "#{game.dig('goals', 'home')} - #{game.dig('goals', 'away')}"
-                  %span.text-muted= game.dig('league', 'name')
+                  %span.text-muted.very-small= game.dig('league', 'name')
+
+    -# --- SECTION 2: TEAM FORM MOMENTUM ---
+    .row.mb-4
+      - [home, away].each_with_index do |team, idx|
+        .col-md-6
+          .card.shadow-sm
+            .card-header.bg-white.d-flex.justify-content-between.align-items-center
+              %div
+                %img.me-2{ src: team['logo'], width: '20' }
+                %strong= team['name']
+              .small
+                %span.text-muted Last 5:
+                - team.dig('league', 'form').to_s.last(5).chars.each do |c|
+                  - color = c == 'W' ? 'text-success' : (c == 'L' ? 'text-danger' : 'text-warning')
+                  %span{ class: "fw-bold #{color}" }= c
+            .card-body.py-2
+              .row.text-center
+                .col-4
+                  .small.text-muted Attacking
+                  .h5.mb-0= team.dig('last_5', 'att')
+                .col-4.border-start.border-end
+                  .small.text-muted Defensive
+                  .h5.mb-0= team.dig('last_5', 'def')
+                .col-4
+                  .small.text-muted Form
+                  .h5.mb-0= team.dig('last_5', 'form')
+
+    -# --- SECTION 3: GOAL TIMING & DISCIPLINE ---
+    .row.mb-4
+      .col-md-8
+        .card.shadow-sm
+          .card-header.bg-light.fw-bold.small Scoring Patterns (Goals For %)
+          .card-body
+            .table-responsive
+              %table.table.table-borderless.table-sm.mb-0.text-center{ style: "font-size: 0.75rem;" }
+                %thead.text-muted.text-uppercase
+                  %tr
+                    %th Team
+                    - ["0-15", "16-30", "31-45", "46-60", "61-75", "76-90"].each do |min|
+                      %th= min
+                %tbody
+                  - [home, away].each do |team|
+                    %tr
+                      %td.text-start.fw-bold= team['name']
+                      - ["0-15", "16-30", "31-45", "46-60", "61-75", "76-90"].each do |min|
+                        - val = team.dig('league', 'goals', 'for', 'minute', min, 'percentage')
+                        %td
+                          .p-1.rounded{ class: val.to_f > 25 ? 'bg-success text-white' : 'bg-light' }
+                            = val || '0%'
+      .col-md-4
+        .card.shadow-sm
+          .card-header.bg-light.fw-bold.small Tactical & Discipline
+          .card-body.py-2
+            .d-flex.justify-content-between.small.mb-2
+              %span.text-muted Preferred Setup:
+              %span.fw-bold= "#{home.dig('league', 'lineups', 0, 'formation')} vs #{away.dig('league', 'lineups', 0, 'formation')}"
+            .d-flex.justify-content-between.small.mb-2
+              %span.text-muted Clean Sheets:
+              %span.fw-bold= "#{home.dig('league', 'clean_sheet', 'total')} - #{away.dig('league', 'clean_sheet', 'total')}"
+            %hr.my-2
+            .very-small.text-uppercase.text-muted.mb-1 Most Dangerous Discipline Period
+            - [home, away].each do |team|
+              - dangerous_card_period = team.dig('league', 'cards', 'yellow').max_by { |k, v| v['percentage'].to_f }
+              .d-flex.justify-content-between.very-small.mb-1
+                %span= team['name']
+                %span.text-danger= "#{dangerous_card_period&.first} min (#{dangerous_card_period&.last&.dig('percentage')})"
 
   -# --- EXISTING BETFAIR MARKETS ---
   - if @markets.present?
-    -# ... (Keep your existing market loop here)
-    - @markets.each do |market|
-      .card.mb-4.shadow-sm
-        .card-header.d-flex.justify-content-between.align-items-center
-          %div
-            %h2.h5.mb-0= market.name
-            %small.text-muted= "Betfair Market ID: #{market.betfair_market_id}"
-          %div.text-end
-            - if market.inplay?
-              %span.badge.bg-danger.me-2 LIVE
-            - if market.status.present?
-              %span.badge.bg-secondary= market.status
-        .card-body
-          -# ... (Existing market table)
-          - if market.competitors.any?
-            %table.table.table-sm.align-middle.mb-0
-              %thead
-                %tr
-                  %th Competitor
-                  %th.text-end Probability
-                  %th.text-end Price History
-              %tbody
-                - market.competitors.each do |competitor|
-                  - price = competitor.latest_price
-                  - history = competitor.recent_prices
-                  %tr
-                    %td.fw-semibold= competitor.name
-                    %td.text-end
-                      - if price&.percentage
-                        = "#{price.percentage.to_f.round(1)}%"
-                      - else
-                        %span.text-muted --
-                    %td.text-end
-                      - if history.any?
-                        .d-flex.flex-wrap.justify-content-end.gap-2
-                          - history.each do |historic_price|
-                            %span.badge.bg-light.text-dark
-                              = "#{historic_price.percentage.to_f.round(1)}%"
-                              %small.text-muted.ms-1= "#{time_ago_in_words(historic_price.captured_at)} ago"
-                      - else
-                        %span.text-muted No prices yet
-          - else
-            %p.text-muted No runner data recorded for this market yet.
-
+    .row
+      .col-12
+        - @markets.each do |market|
+          .card.mb-4.shadow-sm
+            .card-header.d-flex.justify-content-between.align-items-center
+              %div
+                %h2.h5.mb-0= market.name
+                %small.text-muted= "Betfair Market ID: #{market.betfair_market_id}"
+              %div.text-end
+                - if market.inplay?
+                  %span.badge.bg-danger.me-2 LIVE
+                - if market.status.present?
+                  %span.badge.bg-secondary= market.status
+            .card-body
+              - if market.competitors.any?
+                %table.table.table-sm.align-middle.mb-0
+                  %thead
+                    %tr
+                      %th Competitor
+                      %th.text-end Probability
+                      %th.text-end Price History
+                  %tbody
+                    - market.competitors.each do |competitor|
+                      - price = competitor.latest_price
+                      - history = competitor.recent_prices
+                      %tr
+                        %td.fw-semibold= competitor.name
+                        %td.text-end
+                          - if price&.percentage
+                            = "#{price.percentage.to_f.round(1)}%"
+                          - else
+                            %span.text-muted --
+                        %td.text-end
+                          - if history.any?
+                            .d-flex.flex-wrap.justify-content-end.gap-2
+                              - history.first(3).each do |historic_price|
+                                %span.badge.bg-light.text-dark
+                                  = "#{historic_price.percentage.to_f.round(1)}%"
+                                  %small.text-muted.ms-1= "#{time_ago_in_words(historic_price.captured_at)} ago"
+                          - else
+                            %span.text-muted No prices yet
   - else
     .alert.alert-info No markets have been captured for this event yet.
 
-  -# Debug section collapsed by default
   %details.mt-5
     %summary.text-muted.small View Raw Data
     %pre.bg-light.p-3.rounded
