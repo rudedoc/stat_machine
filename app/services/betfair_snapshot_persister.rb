@@ -1,6 +1,7 @@
 # frozen_string_literal: true
 
 require "time"
+require "bigdecimal"
 
 class BetfairSnapshotPersister
   def self.persist_for_competition!(competition_id)
@@ -59,9 +60,27 @@ class BetfairSnapshotPersister
     competitor.name = runner[:name]
     competitor.save!
 
-    price = competitor.prices.find_or_initialize_by(captured_at: captured_at)
-    price.percentage = runner[:percentage]
-    price.save!
+    percentage = normalize_percentage(runner[:percentage])
+    return unless percentage
+
+    existing_price = competitor.prices.find_by(captured_at: captured_at)
+    if existing_price
+      return if existing_price.percentage == percentage
+
+      existing_price.update!(percentage: percentage)
+      return
+    end
+
+    latest_price = competitor.prices.order(captured_at: :desc).first
+    return if latest_price&.percentage == percentage
+
+    competitor.prices.create!(captured_at: captured_at, percentage: percentage)
+  end
+
+  def normalize_percentage(value)
+    return if value.nil?
+
+    BigDecimal(value.to_s).round(2)
   end
 
   def parse_time(value)

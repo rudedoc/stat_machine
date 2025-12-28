@@ -1,3 +1,5 @@
+require "bigdecimal"
+
 class BetfairApi
   BASE_URL = "https://api.betfair.com/exchange/betting/rest/v1.0/"
   LOGIN_URL = "https://identitysso.betfair.com/api/login"
@@ -98,7 +100,7 @@ class BetfairApi
       next unless metadata
 
       runner_prices = parse_runners_with_names(book["runners"], metadata[:runners])
-      runner_percentages = ProbabilityCalculator.to_percentages(runner_prices)
+      runner_percentages = normalize_percentages(ProbabilityCalculator.to_percentages(runner_prices))
 
       {
         event_name: metadata[:event_name],
@@ -149,6 +151,14 @@ class BetfairApi
     codes = Array(country_codes).map { |code| code.to_s.strip.upcase }.reject(&:blank?)
     codes = SUPPORTED_COUNTRY_CODES if codes.empty?
     codes.uniq & SUPPORTED_COUNTRY_CODES
+  end
+
+  def normalize_percentages(runners)
+    runners.map do |runner|
+      next runner unless runner[:percentage]
+
+      runner.merge(percentage: BigDecimal(runner[:percentage].to_s).round(2))
+    end
   end
 
   # Cleans up the complex nested price hash from Betfair
