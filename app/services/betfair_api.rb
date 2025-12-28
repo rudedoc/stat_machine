@@ -1,9 +1,6 @@
-require "bigdecimal"
-
 class BetfairApi
   BASE_URL = "https://api.betfair.com/exchange/betting/rest/v1.0/"
   LOGIN_URL = "https://identitysso.betfair.com/api/login"
-  SUPPORTED_COUNTRY_CODES = %w[GB PT IT BE FR ES].freeze
 
   def self.import_all_data!
     api = new
@@ -35,20 +32,15 @@ class BetfairApi
         }
       }
     }
-    post_request("listCountries/", payload).select do |country|
-      SUPPORTED_COUNTRY_CODES.include?(country["countryCode"])
-    end
+    post_request("listCountries/", payload)
   end
 
   # Fetch leagues (competitions) filtered by country codes
   def list_competitions(country_codes = [])
-    filtered_country_codes = filter_country_codes(country_codes)
-    return [] if filtered_country_codes.empty?
-
     payload = {
       filter: {
         eventTypeIds: ["1"],
-        marketCountries: filtered_country_codes,
+        marketCountries: Array(country_codes),
         # Filter for matches starting between now and the end of today
         marketStartTime: {
           from: Time.now.utc.strftime("%Y-%m-%dT%H:%M:%SZ"),
@@ -100,7 +92,7 @@ class BetfairApi
       next unless metadata
 
       runner_prices = parse_runners_with_names(book["runners"], metadata[:runners])
-      runner_percentages = normalize_percentages(ProbabilityCalculator.to_percentages(runner_prices))
+      runner_percentages = ProbabilityCalculator.to_percentages(runner_prices)
 
       {
         event_name: metadata[:event_name],
@@ -142,25 +134,9 @@ class BetfairApi
     return [] if market_ids.empty?
     payload = {
       marketIds: market_ids,
-      priceProjection: { 
-        priceData: ["EX_BEST_OFFERS", "TRADED"]
-      }
+      priceProjection: { priceData: ["EX_BEST_OFFERS"] }
     }
     post_request("listMarketBook/", payload)
-  end
-
-  def filter_country_codes(country_codes)
-    codes = Array(country_codes).map { |code| code.to_s.strip.upcase }.reject(&:blank?)
-    codes = SUPPORTED_COUNTRY_CODES if codes.empty?
-    codes.uniq & SUPPORTED_COUNTRY_CODES
-  end
-
-  def normalize_percentages(runners)
-    runners.map do |runner|
-      next runner unless runner[:percentage]
-
-      runner.merge(percentage: BigDecimal(runner[:percentage].to_s).round(2))
-    end
   end
 
   # Cleans up the complex nested price hash from Betfair
@@ -180,7 +156,6 @@ class BetfairApi
       req.headers['X-Application'] = @app_key
       req.headers['X-Authentication'] = @session_token
       req.headers['Content-Type'] = 'application/json'
-      req.headers['Accept'] = 'application/json' # Essential for listMarketBook
       req.body = body.to_json
     end
     JSON.parse(response.body)
