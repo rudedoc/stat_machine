@@ -142,7 +142,9 @@ class BetfairApi
     return [] if market_ids.empty?
     payload = {
       marketIds: market_ids,
-      priceProjection: { priceData: ["EX_BEST_OFFERS"] }
+      priceProjection: { 
+        priceData: ["EX_BEST_OFFERS", "TRADED"]
+      }
     }
     post_request("listMarketBook/", payload)
   end
@@ -178,6 +180,7 @@ class BetfairApi
       req.headers['X-Application'] = @app_key
       req.headers['X-Authentication'] = @session_token
       req.headers['Content-Type'] = 'application/json'
+      req.headers['Accept'] = 'application/json' # Essential for listMarketBook
       req.body = body.to_json
     end
     JSON.parse(response.body)

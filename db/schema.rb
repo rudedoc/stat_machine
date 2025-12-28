@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2025_12_28_214637) do
+ActiveRecord::Schema[8.1].define(version: 2025_12_28_222433) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
 
@@ -20,7 +20,6 @@ ActiveRecord::Schema[8.1].define(version: 2025_12_28_214637) do
     t.string "country_code", null: false
     t.datetime "created_at", null: false
     t.string "name", null: false
-    t.integer "sportmonks_league_id"
     t.datetime "synced_at"
     t.datetime "updated_at", null: false
     t.index ["betfair_id"], name: "index_competitions_on_betfair_id", unique: true
@@ -32,7 +31,6 @@ ActiveRecord::Schema[8.1].define(version: 2025_12_28_214637) do
     t.bigint "market_id", null: false
     t.string "name", null: false
     t.string "selection_id", null: false
-    t.integer "sportmonks_team_id"
     t.datetime "updated_at", null: false
     t.index ["market_id", "selection_id"], name: "index_competitors_on_market_id_and_selection_id", unique: true
     t.index ["market_id"], name: "index_competitors_on_market_id"
@@ -45,7 +43,6 @@ ActiveRecord::Schema[8.1].define(version: 2025_12_28_214637) do
     t.string "flag"
     t.string "name", null: false
     t.string "region"
-    t.integer "sportmonks_id"
     t.string "subregion"
     t.datetime "synced_at"
     t.datetime "updated_at", null: false
@@ -56,11 +53,11 @@ ActiveRecord::Schema[8.1].define(version: 2025_12_28_214637) do
     t.string "betfair_competition_id", null: false
     t.string "betfair_event_id", null: false
     t.datetime "created_at", null: false
+    t.jsonb "exchange_data"
     t.integer "football_api_id"
     t.datetime "kick_off", null: false
     t.string "name", null: false
     t.jsonb "predictions"
-    t.integer "sportmonks_fixture_id"
     t.datetime "updated_at", null: false
     t.index ["betfair_competition_id"], name: "index_events_on_betfair_competition_id"
     t.index ["betfair_event_id"], name: "index_events_on_betfair_event_id", unique: true

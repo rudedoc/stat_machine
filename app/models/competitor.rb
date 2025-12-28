@@ -14,4 +14,8 @@ class Competitor < ApplicationRecord
   def latest_percentage
     latest_price&.percentage&.to_f
   end
+
+  def recent_prices(limit = 3)
+    prices.limit(limit)
+  end
 end

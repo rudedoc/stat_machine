@@ -111,14 +111,27 @@
                 %tr
                   %th Competitor
                   %th.text-end Probability
+                  %th.text-end Price History
               %tbody
                 - market.competitors.each do |competitor|
                   - price = competitor.latest_price
+                  - history = competitor.recent_prices
                   %tr
                     %td.fw-semibold= competitor.name
                     %td.text-end
                       - if price&.percentage
                         = "#{price.percentage.to_f.round(1)}%"
+                      - else
+                        %span.text-muted --
+                    %td.text-end
+                      - if history.any?
+                        .d-flex.flex-wrap.justify-content-end.gap-2
+                          - history.each do |historic_price|
+                            %span.badge.bg-light.text-dark
+                              = "#{historic_price.percentage.to_f.round(1)}%"
+                              %small.text-muted.ms-1= "#{time_ago_in_words(historic_price.captured_at)} ago"
+                      - else
+                        %span.text-muted No prices yet
           - else
             %p.text-muted No runner data recorded for this market yet.
 

@@ -30,13 +30,28 @@ class BetfairSnapshotPersister
     return if match[:betfair_event_id].blank?
 
     event = Event.find_or_initialize_by(betfair_event_id: match[:betfair_event_id])
+    
+    # NEW: Merge the existing exchange_data with the new incoming metadata
+    # This preserves previous data while updating the latest liquidity numbers
+    updated_exchange_data = (event.exchange_data || {}).merge({
+      total_matched: match[:total_matched],
+      last_synced_at: captured_at,
+      betfair_competition_id: match[:betfair_competition_id]
+    })
+
     event.assign_attributes(
       name: match[:event_name],
       betfair_competition_id: match[:betfair_competition_id],
-      kick_off: parse_time(match[:kick_off])
+      kick_off: parse_time(match[:kick_off]),
+      exchange_data: updated_exchange_data
     )
     event.save!
 
+    # Continue with market and competitor persistence...
+    persist_market_and_runners(event, match)
+  end
+
+  def persist_market_and_runners(event, match)
     market = Market.find_or_initialize_by(betfair_market_id: match[:market_id])
     market.assign_attributes(
       event: event,
