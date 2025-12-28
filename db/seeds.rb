@@ -1,1 +1,3 @@
 BetfairApi.import_all_data!
+
+FootballApiService.new.sync_matches

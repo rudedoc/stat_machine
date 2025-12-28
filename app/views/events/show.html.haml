@@ -9,23 +9,82 @@
       %li.breadcrumb-item.active= @event.name
 
   %header.mb-4
-    %h1.h3.mb-2= @event.name
-    %div.text-muted
-      - kickoff = @event.kick_off&.in_time_zone || @event.kick_off
-      - if kickoff
-        %span.me-3
-          %strong Kick Off:
-          = kickoff.strftime("%a %d %b %H:%M %Z")
-      - if @competition
-        %span.me-3
-          %strong Competition:
-          = @competition.name
-      - if @country
-        %span
-          %strong Country:
-          = @country.name
+    .d-flex.justify-content-between.align-items-start
+      %div
+        %h1.h3.mb-2= @event.name
+        %div.text-muted
+          - kickoff = @event.kick_off&.in_time_zone || @event.kick_off
+          - if kickoff
+            %span.me-3
+              %strong Kick Off:
+              = kickoff.strftime("%a %d %b %H:%M %Z")
+          - if @competition
+            %span.me-3
+              %strong Competition:
+              = @competition.name
+      - if @event.predictions.present?
+        .text-end
+          .badge.bg-primary.p-2
+            AI Advice:
+            = @event.predictions.dig('predictions', 'advice')
 
+  -# --- NEW: AI PREDICTIONS DASHBOARD ---
+  - if @event.predictions.present?
+    - pred = @event.predictions
+    - home_stats = pred.dig('teams', 'home')
+    - away_stats = pred.dig('teams', 'away')
+    - comparison = pred['comparison']
+
+    .row.mb-4
+      -# 1. Win Probability Comparison
+      .col-md-4
+        .card.h-100.shadow-sm
+          .card-header.bg-light
+            %strong.small AI Win Probability
+          .card-body
+            - perc = pred.dig('predictions', 'percent')
+            .d-flex.justify-content-between.mb-1.small
+              %span= home_stats['name']
+              %span= perc['home']
+            .progress.mb-3{ style: "height: 10px;" }
+              .progress-bar.bg-success{ role: "progressbar", style: "width: #{perc['home']}" }
+              .progress-bar.bg-secondary{ role: "progressbar", style: "width: #{perc['draw']}" }
+              .progress-bar.bg-info{ role: "progressbar", style: "width: #{perc['away']}" }
+            .d-flex.justify-content-between.small.text-muted
+              %span Draw: #{perc['draw']}
+              %span= "#{away_stats['name']}: #{perc['away']}"
+
+      -# 2. Tale of the Tape (Comparison)
+      .col-md-4
+        .card.h-100.shadow-sm
+          .card-header.bg-light
+            %strong.small Statistical Advantage
+          .card-body.py-2
+            - ['att', 'def', 'form', 'poisson_distribution'].each do |attr|
+              .mb-2
+                .d-flex.justify-content-between.very-small.text-uppercase.fw-bold{ style: "font-size: 0.7rem;" }
+                  %span= attr.humanize
+                .progress{ style: "height: 6px; background-color: #e9ecef;" }
+                  .progress-bar.bg-primary{ style: "width: #{comparison.dig(attr, 'home')}" }
+                  .progress-bar.bg-info.opacity-50{ style: "width: #{comparison.dig(attr, 'away')}" }
+
+      -# 3. Recent Form & H2H
+      .col-md-4
+        .card.h-100.shadow-sm
+          .card-header.bg-light
+            %strong.small Head to Head (Last 5)
+          .card-body.p-0
+            %ul.list-group.list-group-flush.small
+              - pred['h2h'].first(5).each do |game|
+                %li.list-group-item.py-1.d-flex.justify-content-between
+                  %span= game.dig('fixture', 'date').to_date.strftime('%b %y')
+                  %span.fw-bold
+                    = "#{game.dig('goals', 'home')} - #{game.dig('goals', 'away')}"
+                  %span.text-muted= game.dig('league', 'name')
+
+  -# --- EXISTING BETFAIR MARKETS ---
   - if @markets.present?
+    -# ... (Keep your existing market loop here)
     - @markets.each do |market|
       .card.mb-4.shadow-sm
         .card-header.d-flex.justify-content-between.align-items-center
@@ -34,21 +93,17 @@
             %small.text-muted= "Betfair Market ID: #{market.betfair_market_id}"
           %div.text-end
             - if market.inplay?
-              %span.badge.bg-danger me-2 LIVE
+              %span.badge.bg-danger.me-2 LIVE
             - if market.status.present?
               %span.badge.bg-secondary= market.status
-            - if market.last_synced_label
-              %div.small.text-muted.mt-1
-                = "Updated #{time_ago_in_words(market.last_synced_label)} ago"
         .card-body
+          -# ... (Existing market table)
           - if market.competitors.any?
-            - total_percentage = market.competitors.sum { |competitor| competitor.latest_percentage.to_f }
             %table.table.table-sm.align-middle.mb-0
               %thead
                 %tr
                   %th Competitor
                   %th.text-end Probability
-                  %th.text-end Last Captured
               %tbody
                 - market.competitors.each do |competitor|
                   - price = competitor.latest_price
@@ -57,19 +112,14 @@
                     %td.text-end
                       - if price&.percentage
                         = "#{price.percentage.to_f.round(1)}%"
-                      - else
-                        %span.text-muted Pending
-                    %td.text-end
-                      - if price&.captured_at
-                        = price.captured_at.in_time_zone.strftime("%d %b %H:%M")
-                      - else
-                        %span.text-muted —
-              %tfoot
-                %tr
-                  %th{ colspan: 1 } Total
-                  %th.text-end= "#{total_percentage.round(1)}%"
-                  %th
           - else
             %p.text-muted No runner data recorded for this market yet.
+
   - else
     .alert.alert-info No markets have been captured for this event yet.
+
+  -# Debug section collapsed by default
+  %details.mt-5
+    %summary.text-muted.small View Raw Data
+    %pre.bg-light.p-3.rounded
+      %code= JSON.pretty_generate(@event.predictions)
