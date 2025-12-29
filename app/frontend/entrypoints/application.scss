@@ -196,3 +196,225 @@
 #firebaseui-auth-container:empty {
   display: none;
 }
+
+.page-shell {
+  background: linear-gradient(180deg, #050519 0%, #0c1230 200px, #f6f8fc 200px);
+  min-height: 100vh;
+  padding: 2.5rem 0 4rem;
+}
+
+.page-hero {
+  background: radial-gradient(circle at 20% 20%, rgba(255, 255, 255, 0.15), transparent 55%),
+    radial-gradient(circle at 80% 0%, rgba(96, 165, 250, 0.35), transparent 45%),
+    linear-gradient(135deg, #0f172a, #312e81 65%, #4c1d95);
+  border-radius: 1.75rem;
+  color: #fff;
+  padding: 3rem;
+  position: relative;
+  overflow: hidden;
+  box-shadow: 0 30px 65px rgba(5, 10, 30, 0.6);
+}
+
+.page-hero::after {
+  content: "";
+  position: absolute;
+  inset: 10% auto -30% 55%;
+  width: 320px;
+  height: 320px;
+  background: radial-gradient(circle, rgba(255, 255, 255, 0.18), transparent 70%);
+  opacity: 0.6;
+  filter: blur(2px);
+}
+
+.page-hero .hero-kicker {
+  font-size: 0.75rem;
+  text-transform: uppercase;
+  letter-spacing: 0.2em;
+  margin-bottom: 0.75rem;
+  color: rgba(255, 255, 255, 0.65);
+}
+
+.hero-meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1.25rem;
+  font-size: 0.95rem;
+  color: rgba(255, 255, 255, 0.75);
+}
+
+.hero-meta strong {
+  display: block;
+  color: #fff;
+  font-size: 1rem;
+}
+
+.glass-panel {
+  background: rgba(15, 23, 42, 0.35);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: 1.25rem;
+  padding: 1.5rem;
+  backdrop-filter: blur(12px);
+}
+
+.stat-chip {
+  border-radius: 1rem;
+  border: 1px solid rgba(255, 255, 255, 0.25);
+  padding: 0.9rem 1.1rem;
+  min-width: 140px;
+  font-size: 0.85rem;
+  color: rgba(255, 255, 255, 0.8);
+}
+
+.stat-chip strong {
+  display: block;
+  font-size: 1.4rem;
+  color: #fff;
+}
+
+.stat-chip-light {
+  background: #f8fafc;
+  border: 1px solid rgba(15, 23, 42, 0.08);
+  color: #0f172a;
+}
+
+.stat-chip-light strong {
+  color: #111827;
+}
+
+.page-section {
+  padding-top: 2.5rem;
+}
+
+.surface-card {
+  background: #fff;
+  border-radius: 1.25rem;
+  border: 1px solid rgba(15, 23, 42, 0.08);
+  box-shadow: 0 15px 35px rgba(15, 23, 42, 0.08);
+  padding: 1.75rem;
+}
+
+.surface-card.link-card {
+  display: block;
+  transition: transform 0.25s ease, box-shadow 0.25s ease;
+  color: inherit;
+}
+
+.surface-card.link-card:hover {
+  text-decoration: none;
+  transform: translateY(-6px);
+  box-shadow: 0 30px 45px rgba(15, 23, 42, 0.16);
+}
+
+.glow-breadcrumb {
+  background: rgba(255, 255, 255, 0.9);
+  border-radius: 999px;
+  padding: 0.4rem 1rem;
+  display: inline-block;
+  border: 1px solid rgba(15, 23, 42, 0.08);
+  box-shadow: 0 10px 25px rgba(15, 23, 42, 0.08);
+}
+
+.glow-breadcrumb .breadcrumb {
+  margin-bottom: 0;
+}
+
+.empty-state {
+  text-align: center;
+  padding: 3rem;
+  border-radius: 1.25rem;
+  border: 1px dashed rgba(15, 23, 42, 0.15);
+  background: rgba(255, 255, 255, 0.85);
+}
+
+.event-card {
+  display: flex;
+  flex-direction: column;
+  gap: 0.85rem;
+}
+
+.event-card .progress {
+  height: 0.65rem;
+  border-radius: 999px;
+  background-color: rgba(15, 23, 42, 0.06);
+}
+
+.matchup-stack {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  flex-wrap: wrap;
+}
+
+.matchup-stack img {
+  width: 56px;
+  height: 56px;
+  object-fit: contain;
+}
+
+.matchup-stack .vs-pill {
+  padding: 0.35rem 0.75rem;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.15);
+  font-weight: 600;
+  letter-spacing: 0.05em;
+}
+
+.hero-meta .meta-item {
+  display: flex;
+  flex-direction: column;
+  min-width: 140px;
+}
+
+.hero-meta .meta-item span {
+  font-size: 0.8rem;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  color: rgba(255, 255, 255, 0.6);
+}
+
+.hero-meta .meta-item strong {
+  font-size: 1.1rem;
+}
+
+.event-dashboard .card {
+  border: none;
+  border-radius: 1.25rem;
+  box-shadow: 0 18px 40px rgba(15, 23, 42, 0.08);
+}
+
+.event-dashboard .card-header {
+  border-bottom: 1px solid rgba(15, 23, 42, 0.07);
+  background: transparent;
+  font-weight: 600;
+}
+
+.event-dashboard .list-group-item {
+  border: none;
+  border-bottom: 1px solid rgba(15, 23, 42, 0.06);
+}
+
+.event-dashboard .list-group-item:last-child {
+  border-bottom: none;
+}
+
+.event-dashboard table {
+  font-size: 0.9rem;
+}
+
+@media (max-width: 767px) {
+  .page-hero {
+    padding: 2rem;
+  }
+
+  .page-shell {
+    padding-top: 1.5rem;
+  }
+
+  .surface-card {
+    padding: 1.25rem;
+  }
+
+  .stat-chip {
+    width: 100%;
+  }
+}

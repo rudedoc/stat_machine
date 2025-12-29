@@ -1,13 +1,78 @@
 - content_for :title, "Your Stat Machine Profile"
 
-.section-profile.py-5
+- copy = @profile_props[:copy] || {}
+.page-shell.pb-5
   .container
-    .row.justify-content-center
-      .col-lg-8
-        %div.text-center.mb-4
-          %h1.fw-bold.mb-2 Secure Profile
-          %p.text-muted
-            Manage your Stat Machine identity through Firebase authentication.
-        #vue-app{ data: { props: @profile_props.to_json } }
-        %noscript
-          %p.text-danger.mt-3 Enable JavaScript to manage your profile.
+    %section.page-hero.mb-5
+      .row.align-items-center.gy-4
+        .col-lg-7
+          %p.hero-kicker Identity
+          %h1.display-5.fw-bold.mb-3= copy[:heading] || "Secure Profile"
+          %p.lead.text-white-50.mb-4= copy[:subheading] || "Manage your Stat Machine identity through Firebase authentication."
+          .d-flex.flex-wrap.gap-3
+            .stat-chip
+              %span.text-uppercase.small.text-white-50 Firebase Auth
+              %strong Encrypted
+              %small.text-white-50 Session secured by Google Identity
+            .stat-chip
+              %span.text-uppercase.small.text-white-50 Account Health
+              %strong Live
+              %small.text-white-50 Update tokens & sync sources
+        .col-lg-5
+          .glass-panel
+            %p.eyebrow.mb-2 Session Watch
+            %h3.fw-semibold.mb-3 Keep your betting identity sharp
+            %p.text-white-50.mb-3
+              We rely on Firebase to generate secure tokens, so linking sportsbooks or edge alerts never exposes your underlying email.
+            %ul.list-unstyled.text-white-50.small.mb-0
+              %li.mb-2
+                %i.bi.bi-shield-lock.me-2
+                Multi-factor ready accounts stay protected across devices.
+              %li.mb-2
+                %i.bi.bi-hdd-network.me-2
+                Tokens refresh automatically with one-click reauth.
+              %li
+                %i.bi.bi-person-check.me-2
+                We only store a hashed identity reference inside Stat Machine.
+
+    %section.page-section.pt-0
+      .row.gy-4
+        .col-lg-7
+          .surface-card.h-100
+            %div.d-flex.justify-content-between.align-items-center.mb-3
+              %div
+                %span.eyebrow.text-primary Account Center
+                %h2.h4.fw-bold.mb-0 Manage authentication
+              %span.badge.bg-indigo.bg-opacity-75.text-white Firebase
+            #vue-app{ data: { props: @profile_props.to_json } }
+            %noscript
+              %p.text-danger.mt-3 Enable JavaScript to manage your profile.
+        .col-lg-5
+          .surface-card.h-100
+            %span.eyebrow.text-primary.mb-2 Access Checklist
+            %h3.h5.fw-bold.mb-3 Best practices for sharp bettors
+            %ul.list-unstyled.d-flex.flex-column.gap-3.mb-4
+              %li.d-flex.gap-3
+                %i.bi.bi-phone-fill.text-success.fs-4
+                %div
+                  %strong Turn on MFA
+                  %p.text-muted.mb-0 Protect slips when travelling or betting on public Wi-Fi.
+              %li.d-flex.gap-3
+                %i.bi.bi-browser-chrome.text-primary.fs-4
+                %div
+                  %strong Keep one trusted browser
+                  %p.text-muted.mb-0 Linking sportsbooks from the same browser keeps tokens synced.
+              %li.d-flex.gap-3
+                %i.bi.bi-cloud-arrow-down.text-info.fs-4
+                %div
+                  %strong Refresh data sources
+                  %p.text-muted.mb-0 Re-run sync any time you swap books or funding sources.
+            .d-flex.flex-wrap.gap-3
+              .stat-chip-light.flex-grow-1
+                %span.text-uppercase.small.text-muted Edge Sync
+                %strong Beta
+                %small.text-muted Sync invites sent weekly
+              .stat-chip-light.flex-grow-1
+                %span.text-uppercase.small.text-muted Device Trust
+                %strong 4
+                %small.text-muted Active browsers linked

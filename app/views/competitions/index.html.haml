@@ -1,20 +1,69 @@
-.container.py-4
-  %nav{ "aria-label" => "breadcrumb" }
-    %ol.breadcrumb.mb-4
-      %li.breadcrumb-item= link_to "Countries", countries_path, class: "text-decoration-none"
-      %li.breadcrumb-item.active= @country.name
+- content_for :title, "#{@country.name} competitions"
 
-  .d-flex.justify-content-between.align-items-center.mb-3
-    %h2.h4.mb-0= "Leagues in #{@country.name}"
-    %span.badge.bg-secondary= @country.country_code
+- competitions_count = @competitions.size
+- total_events = @competitions.sum { |competition| competition.events.size }
 
-  - if @competitions.present?
-    .list-group.shadow-sm
-      - @competitions.each do |competition|
-        = link_to country_competition_events_path(@country, competition), class: "list-group-item list-group-item-action d-flex justify-content-between align-items-center py-3" do
-          .text-start
-            %span.fw-bold= competition.name
-            %div.text-muted.small= "Betfair ID: #{competition.betfair_id}"
-          %span.badge.bg-primary.rounded-pill= pluralize(competition.events.count, "Event")
-  - else
-    .alert.alert-warning No competitions have been synced for this country yet.
+.page-shell.pb-5
+  .container
+    %nav.glow-breadcrumb{ "aria-label" => "breadcrumb" }
+      %ol.breadcrumb.mb-0
+        %li.breadcrumb-item= link_to "Countries", countries_path, class: "text-decoration-none"
+        %li.breadcrumb-item.active= @country.name
+
+    %section.page-hero.mb-5
+      .row.align-items-center.gy-4
+        .col-lg-7
+          %p.hero-kicker #{@country.region || 'Country'} Spotlight
+          %h1.display-5.fw-bold.mb-3= "Leagues in #{@country.name}"
+          %p.lead.text-white-50.mb-4
+            Drill into #{@country.name}'s domestic and international leagues to see which events currently carry actionable edge.
+          .d-flex.flex-wrap.gap-3
+            .stat-chip
+              %span.text-uppercase.small.text-white-50 Active Leagues
+              %strong= competitions_count
+              %small.text-white-50 sourced from Betfair
+            .stat-chip
+              %span.text-uppercase.small.text-white-50 Tracked Events
+              %strong= number_with_delimiter(total_events)
+              %small.text-white-50 aggregated across leagues
+            .stat-chip
+              %span.text-uppercase.small.text-white-50 Country Code
+              %strong= @country.country_code
+              %small.text-white-50 #{@country.subregion || 'Global'}
+        .col-lg-5
+          .glass-panel
+            %div.d-flex.align-items-center.gap-2.mb-3
+              %span.fs-3= @country.flag.presence || @country.country_code
+              %div
+                %span.eyebrow.text-white-50 Primary Market
+                %h3.h5.mb-0.text-white #{@country.name}
+            %p.text-white-50.mb-4
+              Stat Machine maps each Betfair competition to this country so you can move from macro scan to individual event prices without friction.
+            .d-flex.flex-wrap.gap-2
+              = link_to "View countries", countries_path, class: "btn btn-light"
+              = link_to "Sync competitions", country_competitions_path(@country), class: "btn btn-outline-light"
+
+    %section.page-section.pt-0
+      - if @competitions.present?
+        .row.g-4
+          - @competitions.each do |competition|
+            - events_count = competition.events.size
+            .col-12.col-md-6
+              = link_to country_competition_events_path(@country, competition), class: "surface-card link-card h-100 text-decoration-none" do
+                %div.d-flex.justify-content-between.align-items-start.mb-2
+                  %div
+                    %span.eyebrow.text-primary= competition.competition_region.presence || 'League'
+                    %h3.h5.fw-bold.mb-1= competition.name
+                    %p.text-muted.small.mb-0= "Betfair ID: #{competition.betfair_id}"
+                  %span.badge.bg-indigo.text-white= pluralize(events_count, 'Event')
+                %p.text-muted.small.mb-3
+                  Track market movers, AI probabilities, and liquidity for every event inside this competition.
+                .d-flex.flex-wrap.gap-2
+                  %span.badge.bg-light.text-muted.border= competition.competition_region.presence || 'All regions'
+                  - if @country.region.present?
+                    %span.badge.bg-success.bg-opacity-10.text-success.border.border-success.border-opacity-25= @country.region
+                  %span.badge.bg-dark.text-white #{events_count} fixtures
+      - else
+        .empty-state
+          %p.text-muted.mb-3 No competitions have been synced for this country yet.
+          = link_to "Sync competitions", country_competitions_path(@country), class: "btn btn-primary"

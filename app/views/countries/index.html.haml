@@ -1,28 +1,75 @@
-.container.py-4
-  %nav{ "aria-label" => "breadcrumb" }
-    %ol.breadcrumb.mb-0
-      %li.breadcrumb-item.active Countries
+- content_for :title, "Countries — Stat Machine"
 
-  - if @countries.present?
-    .row.g-3
-      - @countries.each do |country|
-        .col-6.col-md-3.col-lg-2
-          = link_to country_competitions_path(country), class: "card text-center p-3 text-decoration-none shadow-sm h-100 hover-elevate" do
-            - display_flag = country.flag.presence || country.country_code
-            .h4.mb-1= display_flag
-            .fw-bold.text-dark= country.name
-            - metadata_parts = [country.country_code, country.region, country.subregion].compact
-            - if metadata_parts.any?
-              .small.text-muted= metadata_parts.join(" / ")
-            .small.text-muted= pluralize(country.events.count, "Event")
-  - else
-    .text-center.py-5
-      %p.text-muted Countries have not been synced yet.
-      = link_to "Refresh countries", countries_path, class: "btn btn-outline-primary"
+- total_countries = @countries.size
+- total_events = @countries.sum { |country| country.events.size }
+- regions = @countries.map(&:region).compact.uniq
+- latest_sync = @countries.map(&:synced_at).compact.max
 
-:css
-  .hover-elevate:hover {
-    transform: translateY(-3px);
-    transition: transform 0.2s ease;
-    background-color: #f8f9fa;
-  }
+.page-shell.pb-5
+  .container
+    %nav.glow-breadcrumb{ "aria-label" => "breadcrumb" }
+      %ol.breadcrumb.mb-0
+        %li.breadcrumb-item.active Countries
+
+    %section.page-hero.mb-5
+      .row.align-items-center.gy-4
+        .col-lg-7
+          %p.hero-kicker Markets Map
+          %h1.display-5.fw-bold.mb-3 Browse every country Stat Machine tracks
+          %p.lead.text-white-50.mb-4
+            Tap a country to drill down into synced competitions, active events, and live-priced markets.
+          .d-flex.flex-wrap.gap-3
+            .stat-chip
+              %span.text-uppercase.small.text-white-50 Active Countries
+              %strong= number_with_delimiter(total_countries)
+              %small.text-white-50 Coverage refreshed hourly
+            .stat-chip
+              %span.text-uppercase.small.text-white-50 Regions
+              %strong= regions.size
+              %small.text-white-50 Continental breakdown
+            .stat-chip
+              %span.text-uppercase.small.text-white-50 Tracked Events
+              %strong= number_with_delimiter(total_events)
+              %small.text-white-50 Across all competitions
+        .col-lg-5
+          .glass-panel
+            %p.eyebrow.mb-2 Refresh Status
+            %h3.h5.fw-semibold.mb-3
+              Sync complete
+              - if latest_sync
+                %span.text-white-50= " · #{time_ago_in_words(latest_sync)} ago"
+            %p.text-white-50.mb-3
+              Every refresh pulls Betfair country data, normalizes ISO metadata, and links the latest competitions for fast drill downs.
+            %div.d-flex.flex-wrap.gap-2
+              = link_to "Sync countries", countries_path, class: "btn btn-light fw-semibold"
+              = link_to "Edge tracker", root_path(anchor: 'prediction-lab'), class: "btn btn-outline-light"
+
+    %section.page-section.pt-0
+      - if @countries.present?
+        .row.g-4
+          - @countries.each do |country|
+            - events_count = country.events.size
+            .col-12.col-sm-6.col-lg-4.col-xl-3
+              = link_to country_competitions_path(country), class: "surface-card link-card h-100 text-decoration-none" do
+                %div.d-flex.justify-content-between.align-items-center.mb-3
+                  %div.d-flex.align-items-center.gap-2
+                    %span.fs-3= country.flag.presence || country.country_code
+                    %div
+                      %strong.text-dark.mb-0= country.name
+                      %span.badge.bg-light.text-dark.small= country.country_code
+                  %span.badge.bg-indigo.text-white= pluralize(country.competitions.size, 'League')
+                - metadata_parts = [country.region, country.subregion].compact
+                - if metadata_parts.any?
+                  %p.text-muted.small.mb-2= metadata_parts.join(' / ')
+                %p.fw-semibold.mb-0= pluralize(events_count, 'Tracked event')
+                %p.text-muted.small.mb-3
+                  Synced via Betfair and normalized with ISO data sets.
+                .d-flex.flex-wrap.gap-2
+                  %span.badge.bg-success.bg-opacity-10.text-success.border.border-success.border-opacity-25
+                    = "#{events_count} events"
+                  %span.badge.bg-light.text-muted.border
+                    = country.synced_at ? "Updated #{time_ago_in_words(country.synced_at)} ago" : 'Not synced yet'
+      - else
+        .empty-state
+          %p.text-muted.mb-3 Countries have not been synced yet.
+          = link_to "Refresh countries", countries_path, class: "btn btn-primary"

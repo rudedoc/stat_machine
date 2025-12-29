@@ -1,52 +1,89 @@
-.container.py-4
-  %nav{ "aria-label" => "breadcrumb" }
-    %ol.breadcrumb.mb-4
-      %li.breadcrumb-item= link_to "Countries", countries_path, class: "text-decoration-none"
-      - if @country
-        %li.breadcrumb-item= link_to @country.name, country_competitions_path(@country), class: "text-decoration-none"
-      %li.breadcrumb-item.active= @competition.name
+- content_for :title, "#{@competition.name} events"
 
-  .d-flex.justify-content-between.align-items-center.mb-3
-    %div
-      %h2.h4.mb-1= @competition.name
-      %p.text-muted.mb-0= "#{@events.size} events tracked"
-    %div.text-end
-      %span.badge.bg-secondary= @competition.betfair_id
-      - if @country
-        %span.badge.bg-light.text-dark.ms-2= @country.country_code
+- events_count = @events.size
+- live_events = @events.count { |event| event.primary_market&.inplay? }
 
-  - if @events.present?
-    .list-group.shadow-sm
-      - @events.each do |event|
-        - market = event.primary_market
-        - percentages = market&.latest_probabilities || []
-        - kickoff = event.kick_off&.in_time_zone || event.kick_off
-        = link_to country_competition_event_path(@country, @competition, event), class: "list-group-item list-group-item-action py-3" do
-          .d-flex.align-items-center.justify-content-between.flex-wrap.gap-3
-            .flex-grow-1
-              %div.d-flex.align-items-center.gap-2.mb-1
-                %strong.text-dark= event.name
-                - if market&.inplay?
-                  %span.badge.bg-danger.p-1{ style: "font-size: 0.65rem;" } LIVE
-              .small.text-muted
-                - if kickoff
-                  = kickoff.strftime("%a %d %b %H:%M")
+.page-shell.pb-5
+  .container
+    %nav.glow-breadcrumb{ "aria-label" => "breadcrumb" }
+      %ol.breadcrumb.mb-0
+        %li.breadcrumb-item= link_to "Countries", countries_path, class: "text-decoration-none"
+        - if @country
+          %li.breadcrumb-item= link_to @country.name, country_competitions_path(@country), class: "text-decoration-none"
+        %li.breadcrumb-item.active= @competition.name
+
+    %section.page-hero.mb-5
+      .row.align-items-center.gy-4
+        .col-lg-7
+          %p.hero-kicker Competition Pulse
+          %h1.display-5.fw-bold.mb-3= @competition.name
+          %p.lead.text-white-50.mb-4
+            All live and upcoming fixtures flowing from Betfair are monitored for pricing gaps, so you can strike before markets settle.
+          .d-flex.flex-wrap.gap-3
+            .stat-chip
+              %span.text-uppercase.small.text-white-50 Events tracked
+              %strong= events_count
+              %small.text-white-50 with verified markets
+            .stat-chip
+              %span.text-uppercase.small.text-white-50 Live edges
+              %strong= live_events
+              %small.text-white-50 markets currently in-play
+            .stat-chip
+              %span.text-uppercase.small.text-white-50 Competition ID
+              %strong= @competition.betfair_id
+              %small.text-white-50= @country&.country_code || 'Global'
+        .col-lg-5
+          .glass-panel
+            %span.eyebrow.text-white-50 League snapshot
+            %h3.h5.text-white.fw-semibold.mb-3
+              = @country&.name || 'Global coverage'
+              %small.text-white-50.ms-2= @country&.region
+            %p.text-white-50.mb-3
+              Market sync ensures every fixture inherits liquidity markers, exchange data, and AI predictions when available.
+            .d-flex.flex-wrap.gap-2
+              %span.badge.bg-light.text-dark= "#{events_count} active events"
+              %span.badge.bg-dark.text-white= @competition.betfair_id
+
+    %section.page-section.pt-0
+      - if @events.present?
+        .row.g-4
+          - @events.each do |event|
+            - market = event.primary_market
+            - percentages = market&.latest_probabilities || []
+            - kickoff = event.kick_off&.in_time_zone || event.kick_off
+            .col-12
+              = link_to country_competition_event_path(@country, @competition, event), class: "surface-card link-card event-card text-decoration-none text-dark" do
+                %div.d-flex.align-items-center.justify-content-between.gap-3.flex-wrap
+                  %div.flex-grow-1
+                    %div.d-flex.align-items-center.gap-2.mb-1
+                      %strong.h5.mb-0= event.name
+                      - if market&.inplay?
+                        %span.badge.bg-danger.bg-opacity-75.text-white.small LIVE
+                    %p.text-muted.small.mb-0
+                      - if kickoff
+                        = kickoff.strftime('%a %d %b · %H:%M')
+                      - else
+                        Upcoming time TBD
+                      - if market&.status.present?
+                        = " · #{market.status.titleize}"
+                  %div.text-end
+                    - if market&.name.present?
+                      %span.badge.bg-light.text-dark= market.name
+                    - if market&.last_synced_label.present?
+                      %p.text-muted.small.mb-0= "Updated #{time_ago_in_words(market.last_synced_label)} ago"
+                - if percentages.present?
+                  .progress.mt-2
+                    - percentages.each_with_index do |data, idx|
+                      - bg_class = %w[bg-primary bg-success bg-info][idx % 3]
+                      .progress-bar{ class: "#{bg_class} text-white",
+                        role: "progressbar",
+                        style: "width: #{data[:percentage]}%",
+                        title: "#{data[:name]}: #{data[:percentage]}%" }
+                        - if data[:percentage].to_f > 15
+                          %small.fw-semibold= "#{data[:percentage]}%"
                 - else
-                  = "TBD"
-                - if market&.status.present?
-                  = " · #{market.status}"
-            .flex-grow-1
-              - if percentages.present?
-                .progress{ style: "height: 18px; border-radius: 4px; background-color: #f1f3f5;" }
-                  - percentages.each_with_index do |data, idx|
-                    - bg_class = ['bg-primary', 'bg-secondary', 'bg-success'][idx]
-                    .progress-bar.border-end.border-white.border-1{ class: bg_class,
-                      role: "progressbar",
-                      style: "width: #{data[:percentage]}%",
-                      title: "#{data[:name]}: #{data[:percentage]}%" }
-                      - if data[:percentage].to_f > 15
-                        %small.fw-bold{ style: "font-size: 0.65rem;" }= "#{data[:percentage]}%"
-              - else
-                %span.text-muted.small No prices yet
-  - else
-    .alert.alert-warning No events have been recorded for this competition yet.
+                  %p.text-muted.small.mb-0 No probabilities published yet.
+      - else
+        .empty-state
+          %p.text-muted.mb-3 No events have been recorded for this competition yet.
+          = link_to "Sync events", country_competition_events_path(@country, @competition), class: "btn btn-primary"
