@@ -3,6 +3,13 @@ class FootballApiService
   base_uri 'https://v3.football.api-sports.io'
   ENGLISH_PREMIER_LEAGUE_ID = 39
 
+  # find the betfair team name for a given football api team name
+  FOOTBALL_API_TO_BETFAIR_TEAM_NAME_MAPPINGS = {
+    'Nottingham Forest' => 'Nottm Forest',
+    'Manchester United' => 'Man Utd',
+    'Manchester City' => 'Man City',
+  }
+
   def initialize
     @options = {
       headers: {
@@ -75,16 +82,16 @@ class FootballApiService
   def find_event_for_match(league, match_data)
     fixture = match_data['fixture']
     teams = match_data['teams']
-    home_name = teams.dig('home', 'name')
-    away_name = teams.dig('away', 'name')
+    home_name = FOOTBALL_API_TO_BETFAIR_TEAM_NAME_MAPPINGS.fetch(teams.dig('home', 'name'), teams.dig('home', 'name'))
+    away_name = FOOTBALL_API_TO_BETFAIR_TEAM_NAME_MAPPINGS.fetch(teams.dig('away', 'name'), teams.dig('away', 'name'))
     kick_off = DateTime.parse(fixture['date'])
     event_name = "#{home_name} v #{away_name}".downcase
 
-    league
-      .events
-      .where('lower(events.name) = ?', event_name)
-      .where('events.kick_off = ?', kick_off)
-      .first
+    db_event = league.events.where('lower(events.name) = ?', event_name).where('events.kick_off = ?', kick_off).first
+
+    binding.pry if db_event.nil?
+
+    db_event
   end
 
   def fetch_prediction_for_fixture(fixture_id)
