@@ -72,3 +72,7 @@ gem "firebase_id_token", "~> 2.5"
 gem "httparty", "~> 0.23.2"
 
 gem "countries", "~> 8.0"
+
+gem "discordrb", "~> 3.7"
+
+gem "vader_sentiment_ruby", "~> 0.1.1"

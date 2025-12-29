@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2025_12_29_122010) do
+ActiveRecord::Schema[8.1].define(version: 2025_12_29_162938) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
 
@@ -89,6 +89,29 @@ ActiveRecord::Schema[8.1].define(version: 2025_12_29_122010) do
     t.index ["competitor_id"], name: "index_prices_on_competitor_id"
   end
 
+  create_table "sentiment_logs", force: :cascade do |t|
+    t.string "author"
+    t.datetime "captured_at"
+    t.datetime "created_at", null: false
+    t.text "raw_text"
+    t.float "score"
+    t.string "source"
+    t.bigint "team_id", null: false
+    t.datetime "updated_at", null: false
+    t.index ["team_id"], name: "index_sentiment_logs_on_team_id"
+  end
+
+  create_table "teams", force: :cascade do |t|
+    t.string "aliases", default: [], array: true
+    t.string "betfair_name"
+    t.datetime "created_at", null: false
+    t.integer "football_api_id"
+    t.string "name"
+    t.string "short_name"
+    t.datetime "updated_at", null: false
+    t.index ["aliases"], name: "index_teams_on_aliases", using: :gin
+  end
+
   create_table "users", force: :cascade do |t|
     t.datetime "created_at", null: false
     t.string "display_name"
@@ -104,4 +127,5 @@ ActiveRecord::Schema[8.1].define(version: 2025_12_29_122010) do
   add_foreign_key "competitors", "markets"
   add_foreign_key "markets", "events"
   add_foreign_key "prices", "competitors"
+  add_foreign_key "sentiment_logs", "teams"
 end
