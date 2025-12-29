@@ -89,8 +89,6 @@ class FootballApiService
 
     db_event = league.events.where('lower(events.name) = ?', event_name).where('events.kick_off = ?', kick_off).first
 
-    binding.pry if db_event.nil?
-
     db_event
   end
 
