@@ -31,10 +31,10 @@ class BetfairSnapshotPersister
 
     event = Event.find_or_initialize_by(betfair_event_id: match[:betfair_event_id])
     
-    # NEW: Merge the existing exchange_data with the new incoming metadata
-    # This preserves previous data while updating the latest liquidity numbers
+    # Merge Event Level Liquidity
     updated_exchange_data = (event.exchange_data || {}).merge({
       total_matched: match[:total_matched],
+      total_available: match[:total_available],
       last_synced_at: captured_at,
       betfair_competition_id: match[:betfair_competition_id]
     })
@@ -47,7 +47,6 @@ class BetfairSnapshotPersister
     )
     event.save!
 
-    # Continue with market and competitor persistence...
     persist_market_and_runners(event, match)
   end
 
@@ -72,16 +71,30 @@ class BetfairSnapshotPersister
     return unless selection_id.present?
 
     competitor = market.competitors.find_or_initialize_by(selection_id: selection_id.to_s)
-    competitor.name = runner[:name]
+    
+    # UDPATE: Store Runner Level Liquidity
+    # Mirrors the event logic. Assumes 'exchange_data' JSON column exists on Competitors.
+    # If not, add migration: add_column :competitors, :exchange_data, :jsonb, default: {}
+    current_data = competitor.attributes["exchange_data"] || {} rescue {}
+    
+      competitor.assign_attributes(
+      name: runner[:name],
+      exchange_data: current_data.merge({
+        total_matched: runner[:total_matched],     # PASSED!
+        last_price_traded: runner[:last_price_traded], # PASSED!
+        spread: runner[:spread],                   # PASSED!
+        last_synced_at: captured_at
+      })
+    )
     competitor.save!
 
+    # Price History Logic (Unchanged)
     percentage = normalize_percentage(runner[:percentage])
     return unless percentage
 
     existing_price = competitor.prices.find_by(captured_at: captured_at)
     if existing_price
       return if existing_price.percentage == percentage
-
       existing_price.update!(percentage: percentage)
       return
     end
@@ -94,7 +107,6 @@ class BetfairSnapshotPersister
 
   def normalize_percentage(value)
     return if value.nil?
-
     BigDecimal(value.to_s).round(2)
   end
 

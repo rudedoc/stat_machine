@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2025_12_28_222433) do
+ActiveRecord::Schema[8.1].define(version: 2025_12_29_122010) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
 
@@ -28,10 +28,12 @@ ActiveRecord::Schema[8.1].define(version: 2025_12_28_222433) do
 
   create_table "competitors", force: :cascade do |t|
     t.datetime "created_at", null: false
+    t.jsonb "exchange_data", default: {}, null: false
     t.bigint "market_id", null: false
     t.string "name", null: false
     t.string "selection_id", null: false
     t.datetime "updated_at", null: false
+    t.index ["exchange_data"], name: "index_competitors_on_exchange_data", using: :gin
     t.index ["market_id", "selection_id"], name: "index_competitors_on_market_id_and_selection_id", unique: true
     t.index ["market_id"], name: "index_competitors_on_market_id"
   end

@@ -8,6 +8,7 @@ class BetfairApi
     Country.sync_all!(api: api)
 
     Country.find_each do |country|
+      # Consider adding .active scope here to skip old countries
       Competition.sync_for_country!(country.country_code, api: api)
     end
 
@@ -25,7 +26,6 @@ class BetfairApi
     payload = {
       filter: {
         eventTypeIds: ["1"],
-        # Syncing the time range with list_competitions
         marketStartTime: {
           from: Time.now.utc.strftime("%Y-%m-%dT%H:%M:%SZ"),
           to: 1.week.from_now.end_of_day.strftime("%Y-%m-%dT%H:%M:%SZ")
@@ -35,13 +35,11 @@ class BetfairApi
     post_request("listCountries/", payload)
   end
 
-  # Fetch leagues (competitions) filtered by country codes
   def list_competitions(country_codes = [])
     payload = {
       filter: {
         eventTypeIds: ["1"],
         marketCountries: Array(country_codes),
-        # Filter for matches starting between now and the end of today
         marketStartTime: {
           from: Time.now.utc.strftime("%Y-%m-%dT%H:%M:%SZ"),
           to: 1.week.from_now.end_of_day.strftime("%Y-%m-%dT%H:%M:%SZ")
@@ -60,68 +58,91 @@ class BetfairApi
       }
     }
     events = post_request("listEvents/", payload)
-    fetch_match_odds_for_events(events, competition_id, persist: persist) # Reuses your existing batching logic
+    fetch_match_odds_for_events(events, competition_id, persist: persist)
   end
 
-  # 2. High-level method to get Matches + Odds in one flow
-  # app/services/betfair_api.rb
+  # Main method to fetch Matches + Odds + Volume
   def fetch_match_odds_for_events(events, betfair_competition_id = nil, persist: true)
     event_ids = events.map { |e| e.dig("event", "id") }
     return [] if event_ids.empty?
 
-    catalogues = list_match_odds_markets(event_ids.first(50))
+    all_matches = []
 
-    # Capture the openDate (kick-off time) from the metadata
-    market_metadata = catalogues.each_with_object({}) do |cat, hash|
-      hash[cat["marketId"]] = {
-        event_name: cat.dig("event", "name"),
-        betfair_event_id: cat.dig("event", "id"),
-        market_name: cat["marketName"],
-        kick_off: cat.dig("event", "openDate"), # New field
-        runners: cat["runners"].each_with_object({}) { |r, h| h[r["selectionId"]] = r["runnerName"] }
-      }
+    event_ids.each_slice(50) do |events_chunk|
+      catalogues = list_match_odds_markets(events_chunk)
+      next if catalogues.empty?
+
+      # ... (metadata mapping logic remains the same) ...
+      market_metadata = catalogues.each_with_object({}) do |cat, hash|
+        hash[cat["marketId"]] = {
+          event_name: cat.dig("event", "name"),
+          betfair_event_id: cat.dig("event", "id"),
+          market_name: cat["marketName"],
+          kick_off: cat.dig("event", "openDate"), # New field
+          runners: cat["runners"].each_with_object({}) { |r, h| h[r["selectionId"]] = r["runnerName"] }
+        }
+      end
+      
+      market_ids = market_metadata.keys
+      market_books = []
+      market_ids.each_slice(25) { |chunk| market_books += get_market_prices_batch(chunk) }
+
+      chunk_matches = market_books.map do |book|
+        metadata = market_metadata[book["marketId"]]
+        next unless metadata
+
+        # 1. Get the Rich Data (Spread, Volume, Prices)
+        rich_runner_data = parse_runners_extended(book["runners"], metadata[:runners])
+
+        # 2. Get the Percentages (Implied Probability)
+        # We assume this returns an array of hashes with at least { selection_id: ..., percentage: ... }
+        probability_data = ProbabilityCalculator.to_percentages(rich_runner_data)
+
+        # 3. MERGE THEM! 
+        # We map the percentage back onto the rich data using selection_id as the key
+        probs_map = probability_data.index_by { |p| p[:selection_id] }
+
+        final_runners = rich_runner_data.map do |runner|
+          # Merge the calculated percentage into the rich runner hash
+          runner.merge(
+            percentage: probs_map.dig(runner[:selection_id], :percentage)
+          )
+        end
+
+        {
+          event_name: metadata[:event_name],
+          betfair_event_id: metadata[:betfair_event_id],
+          market_name: metadata[:market_name],
+          kick_off: metadata[:kick_off],
+          market_id: book["marketId"],
+          betfair_competition_id: betfair_competition_id,
+          status: book["status"],
+          inplay: book["inplay"],
+          total_matched: book["totalMatched"],
+          total_available: book["totalAvailable"],
+          
+          # Now this contains EVERYTHING: spread, total_matched, AND percentage
+          runners: final_runners 
+        }
+      end.compact
+
+      all_matches.concat(chunk_matches)
     end
 
-    market_ids = market_metadata.keys
-    market_books = []
-    market_ids.each_slice(25) { |chunk| market_books += get_market_prices_batch(chunk) }
-
-    captured_at = Time.current
-    matches = market_books.map do |book|
-      metadata = market_metadata[book["marketId"]]
-      next unless metadata
-
-      runner_prices = parse_runners_with_names(book["runners"], metadata[:runners])
-      runner_percentages = ProbabilityCalculator.to_percentages(runner_prices)
-
-      {
-        event_name: metadata[:event_name],
-        betfair_event_id: metadata[:betfair_event_id],
-        market_name: metadata[:market_name],
-        kick_off: metadata[:kick_off], # Pass to final hash
-        market_id: book["marketId"],
-        betfair_competition_id: betfair_competition_id,
-        status: book["status"],
-        inplay: book["inplay"],
-        runners: runner_percentages
-      }
-    end.compact
-
-    if persist && matches.any?
-      BetfairSnapshotPersister.new(matches: matches, captured_at: captured_at).persist!
+    if persist && all_matches.any?
+      BetfairSnapshotPersister.new(matches: all_matches).persist!
     end
 
-    matches
+    all_matches
   end
 
-  # 3. Intermediate: Find the "Match Odds" market IDs
   def list_match_odds_markets(event_ids)
     payload = {
       filter: {
         eventIds: Array(event_ids),
         marketTypeCodes: ["MATCH_ODDS"]
       },
-      maxResults: 50,
+      maxResults: 100, # Increased to ensure we catch all markets in the chunk
       marketProjection: ["RUNNER_DESCRIPTION", "EVENT"]
     }
     post_request("listMarketCatalogue/", payload)
@@ -129,7 +150,6 @@ class BetfairApi
 
   private
 
-  # Gets prices for multiple markets in one API call
   def get_market_prices_batch(market_ids)
     return [] if market_ids.empty?
     payload = {
@@ -139,14 +159,23 @@ class BetfairApi
     post_request("listMarketBook/", payload)
   end
 
-  # Cleans up the complex nested price hash from Betfair
-  def parse_runners_with_names(runners_data, runner_name_map)
+  def parse_runners_extended(runners_data, runner_name_map)
     runners_data.map do |runner|
+      back_price = runner.dig("ex", "availableToBack", 0, "price")
+      lay_price = runner.dig("ex", "availableToLay", 0, "price")
+      
+      spread = (lay_price && back_price) ? (lay_price - back_price).round(2) : nil
+
       {
-        name: runner_name_map[runner["selectionId"]], # Looks up "Man Utd", etc.
+        name: runner_name_map[runner["selectionId"]],
         selection_id: runner["selectionId"],
-        back_price: runner.dig("ex", "availableToBack", 0, "price"),
-        lay_price: runner.dig("ex", "availableToLay", 0, "price")
+        back_price: back_price,
+        lay_price: lay_price,
+        spread: spread,
+        
+        # FIX: Add || 0.0 here to prevent nils in your database
+        total_matched: runner["totalMatched"] || 0.0,      
+        last_price_traded: runner["lastPriceTraded"]
       }
     end
   end
@@ -162,7 +191,6 @@ class BetfairApi
   end
 
   def get_session_token
-    # Cache token for 20 mins to prevent login rate-limiting
     Rails.cache.fetch("betfair_session_token", expires_in: 20.minutes) do
       response = Faraday.post(LOGIN_URL) do |req|
         req.headers['X-Application'] = @app_key
