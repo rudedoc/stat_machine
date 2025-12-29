@@ -95,6 +95,7 @@
               Sourced from the latest Betfair market snapshot, refreshed whenever Stat Machine syncs this event.
             = render 'events/market_probabilities',
               market: primary_market,
+              event: @event,
               progress_class: 'mt-3',
               progress_style: 'height: 0.85rem; border-radius: 999px; background-color: rgba(15, 23, 42, 0.08);',
               show_labels: true,

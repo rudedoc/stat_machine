@@ -71,6 +71,7 @@
                       %p.text-muted.small.mb-0= "Updated #{time_ago_in_words(market.last_synced_label)} ago"
                 = render 'events/market_probabilities',
                   market: market,
+                  event: event,
                   progress_class: 'mt-2',
                   empty_message: 'No probabilities published yet.'
       - else

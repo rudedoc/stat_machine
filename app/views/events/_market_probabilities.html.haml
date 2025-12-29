@@ -1,4 +1,5 @@
 - market = local_assigns[:market]
+- event = local_assigns[:event]
 - percentages = Array(market&.latest_probabilities).compact
 - color_classes = Array(local_assigns[:color_classes]).presence || %w[bg-primary bg-success bg-info]
 - label_threshold = local_assigns.fetch(:label_threshold, 15)
@@ -8,8 +9,27 @@
 - bar_additional_class = local_assigns[:bar_class]
 - show_labels = local_assigns.fetch(:show_labels, false)
 - empty_class = local_assigns[:empty_class] || 'text-muted small mb-0'
+- home_logo = event&.home_team_logo
+- away_logo = event&.away_team_logo
+- home_name = event&.home_team_name || 'Home'
+- away_name = event&.away_team_name || 'Away'
 
 - if percentages.present?
+  - if event && (home_logo.present? || away_logo.present?)
+    .d-flex.justify-content-between.align-items-center.mb-3
+      .d-flex.align-items-center.gap-2
+        - if home_logo.present?
+          %img.rounded-circle{ src: home_logo, width: 36, height: 36, alt: "#{home_name} logo" }
+        %div
+          %small.text-uppercase.text-muted.small.mb-0 Home
+          %strong.d-block= home_name
+      %span.text-muted.small.text-uppercase VS
+      .d-flex.align-items-center.gap-2.text-end
+        %div.text-end
+          %small.text-uppercase.text-muted.small.mb-0 Away
+          %strong.d-block= away_name
+        - if away_logo.present?
+          %img.rounded-circle{ src: away_logo, width: 36, height: 36, alt: "#{away_name} logo" }
   %div{ class: ['progress', progress_extra_class.presence].compact.join(' '), style: progress_style }
     - percentages.each_with_index do |data, idx|
       - label = data[:name] || "Selection #{idx + 1}"
