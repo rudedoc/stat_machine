@@ -1,0 +1,37 @@
+- market = local_assigns[:market]
+- percentages = Array(market&.latest_probabilities).compact
+- color_classes = Array(local_assigns[:color_classes]).presence || %w[bg-primary bg-success bg-info]
+- label_threshold = local_assigns.fetch(:label_threshold, 15)
+- empty_message = local_assigns[:empty_message] || 'No probabilities published yet.'
+- progress_style = local_assigns[:progress_style] || 'height: 0.65rem; border-radius: 999px; background-color: rgba(15, 23, 42, 0.06);'
+- progress_extra_class = local_assigns.fetch(:progress_class, 'mt-2')
+- bar_additional_class = local_assigns[:bar_class]
+- show_labels = local_assigns.fetch(:show_labels, false)
+- empty_class = local_assigns[:empty_class] || 'text-muted small mb-0'
+
+- if percentages.present?
+  %div{ class: ['progress', progress_extra_class.presence].compact.join(' '), style: progress_style }
+    - percentages.each_with_index do |data, idx|
+      - label = data[:name] || "Selection #{idx + 1}"
+      - percentage_value = data[:percentage].to_f
+      - percentage_display = data[:percentage].to_s.include?('%') ? data[:percentage].to_s : format('%.1f%%', percentage_value)
+      - bar_class_names = [color_classes[idx % color_classes.size], bar_additional_class.presence, 'text-white'].compact.join(' ')
+      %div.progress-bar{ class: bar_class_names,
+        role: 'progressbar',
+        style: "width: #{percentage_value}%;",
+        title: "#{label}: #{percentage_display}" }
+        - if percentage_value >= label_threshold
+          %small.fw-semibold= percentage_display
+  - if show_labels
+    .d-flex.flex-wrap.gap-3.mt-3
+      - percentages.each_with_index do |data, idx|
+        - label = data[:name] || "Selection #{idx + 1}"
+        - percentage_value = data[:percentage].to_f
+        - percentage_display = data[:percentage].to_s.include?('%') ? data[:percentage].to_s : format('%.1f%%', percentage_value)
+        .d-flex.align-items-center.gap-2.small.text-muted
+          %span.rounded-pill{ class: color_classes[idx % color_classes.size], style: 'width: 12px; height: 12px; display: inline-block;' }
+          %span
+            %strong.text-dark= label
+            %span.ms-1= percentage_display
+- else
+  %p{ class: empty_class }= empty_message

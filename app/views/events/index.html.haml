@@ -48,7 +48,6 @@
         .row.g-4
           - @events.each do |event|
             - market = event.primary_market
-            - percentages = market&.latest_probabilities || []
             - kickoff = event.kick_off&.in_time_zone || event.kick_off
             .col-12
               = link_to country_competition_event_path(@country, @competition, event), class: "surface-card link-card event-card text-decoration-none text-dark" do
@@ -70,18 +69,10 @@
                       %span.badge.bg-light.text-dark= market.name
                     - if market&.last_synced_label.present?
                       %p.text-muted.small.mb-0= "Updated #{time_ago_in_words(market.last_synced_label)} ago"
-                - if percentages.present?
-                  .progress.mt-2
-                    - percentages.each_with_index do |data, idx|
-                      - bg_class = %w[bg-primary bg-success bg-info][idx % 3]
-                      .progress-bar{ class: "#{bg_class} text-white",
-                        role: "progressbar",
-                        style: "width: #{data[:percentage]}%",
-                        title: "#{data[:name]}: #{data[:percentage]}%" }
-                        - if data[:percentage].to_f > 15
-                          %small.fw-semibold= "#{data[:percentage]}%"
-                - else
-                  %p.text-muted.small.mb-0 No probabilities published yet.
+                = render 'events/market_probabilities',
+                  market: market,
+                  progress_class: 'mt-2',
+                  empty_message: 'No probabilities published yet.'
       - else
         .empty-state
           %p.text-muted.mb-3 No events have been recorded for this competition yet.

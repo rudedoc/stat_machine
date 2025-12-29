@@ -15,6 +15,30 @@ class Event < ApplicationRecord
     markets.max_by { |market| market.last_synced_at || market.updated_at }
   end
 
+  def predicted_home_team
+    predicted_team_for('home')
+  end
+
+  def predicted_away_team
+    predicted_team_for('away')
+  end
+
+  def home_team_logo
+    predicted_home_team['logo']
+  end
+
+  def away_team_logo
+    predicted_away_team['logo']
+  end
+
+  def home_team_name
+    predicted_home_team['name']
+  end
+
+  def away_team_name
+    predicted_away_team['name']
+  end
+
   def to_param
     betfair_event_id
   end
@@ -26,5 +50,13 @@ class Event < ApplicationRecord
     stats = data.dig('data', 'statistics')
 
     # Logic to save stats (e.g., event.update(external_stats: stats))
+  end
+
+  private
+
+  def predicted_team_for(side)
+    return {} unless predictions.respond_to?(:dig)
+
+    predictions.dig('teams', side.to_s) || {}
   end
 end
