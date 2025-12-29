@@ -12,17 +12,17 @@
 - kickoff = @event.kick_off&.in_time_zone || @event.kick_off
 - primary_market = @event.primary_market
 - markets_count = @markets&.size || 0
+- breadcrumb_items = [{ label: 'Countries', path: countries_path }]
+- if @country
+  - breadcrumb_items << { label: @country.name, path: country_competitions_path(@country) }
+- if @competition
+  - comp_path = @country ? country_competition_events_path(@country, @competition) : nil
+  - breadcrumb_items << { label: @competition.name, path: comp_path }
+- breadcrumb_items << { label: @event.name }
 
 .page-shell.pb-5
   .container
-    %nav.glow-breadcrumb{ "aria-label" => "breadcrumb" }
-      %ol.breadcrumb.mb-0
-        %li.breadcrumb-item= link_to "Countries", countries_path, class: "text-decoration-none"
-        - if @country
-          %li.breadcrumb-item= link_to @country.name, country_competitions_path(@country), class: "text-decoration-none"
-        - if @competition
-          %li.breadcrumb-item= link_to @competition.name, country_competition_events_path(@country, @competition), class: "text-decoration-none"
-        %li.breadcrumb-item.active= @event.name
+    = render 'shared/breadcrumbs', items: breadcrumb_items
 
     %section.page-hero.mb-5
       .row.align-items-center.gy-4

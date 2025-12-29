@@ -7,9 +7,7 @@
 
 .page-shell.pb-5
   .container
-    %nav.glow-breadcrumb{ "aria-label" => "breadcrumb" }
-      %ol.breadcrumb.mb-0
-        %li.breadcrumb-item.active Countries
+    = render 'shared/breadcrumbs', items: [ { label: 'Countries' } ]
 
     %section.page-hero.mb-5
       .row.align-items-center.gy-4

@@ -1,0 +1,16 @@
+:ruby
+  breadcrumb_items = Array(local_assigns.fetch(:items, [])).map do |item|
+  item.respond_to?(:symbolize_keys) ? item.symbolize_keys : { label: item }
+  end
+  breadcrumb_items.select! { |item| item[:label].present? }
+
+- if breadcrumb_items.any?
+  %nav.glow-breadcrumb.mb-3{ aria: { label: 'breadcrumb' } }
+    %ol.breadcrumb.mb-0
+      - breadcrumb_items.each_with_index do |item, index|
+        - active = index == breadcrumb_items.length - 1 || item[:path].blank?
+        %li{ class: ["breadcrumb-item", ("active" if active)].compact.join(' '), 'aria-current': (active ? 'page' : nil) }
+          - if !active && item[:path].present?
+            = link_to item[:label], item[:path], class: 'text-decoration-none'
+          - else
+            = item[:label]

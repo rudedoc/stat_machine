@@ -306,16 +306,25 @@
 }
 
 .glow-breadcrumb {
-  background: rgba(255, 255, 255, 0.9);
-  border-radius: 999px;
-  padding: 0.4rem 1rem;
   display: inline-block;
-  border: 1px solid rgba(15, 23, 42, 0.08);
-  box-shadow: 0 10px 25px rgba(15, 23, 42, 0.08);
+  padding: 0;
+  border: none;
+  background: transparent;
+  box-shadow: none;
 }
 
 .glow-breadcrumb .breadcrumb {
   margin-bottom: 0;
+  color: #fff;
+}
+
+.glow-breadcrumb .breadcrumb-item,
+.glow-breadcrumb .breadcrumb-item a {
+  color: rgba(255, 255, 255, 0.85);
+}
+
+.glow-breadcrumb .breadcrumb-item+.breadcrumb-item::before {
+  color: rgba(255, 255, 255, 0.5);
 }
 
 .empty-state {

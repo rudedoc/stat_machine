@@ -1,14 +1,11 @@
-- content_for :title, "#{@country.name} competitions"
-
-- competitions_count = @competitions.size
-- total_events = @competitions.sum { |competition| competition.events.size }
+:ruby
+  content_for :title, "#{@country.name} competitions"
+  competitions_count = @competitions.size 
+  total_events = @competitions.sum { |competition| competition.events.size }
 
 .page-shell.pb-5
   .container
-    %nav.glow-breadcrumb{ "aria-label" => "breadcrumb" }
-      %ol.breadcrumb.mb-0
-        %li.breadcrumb-item= link_to "Countries", countries_path, class: "text-decoration-none"
-        %li.breadcrumb-item.active= @country.name
+    = render 'shared/breadcrumbs', items: [ { label: 'Countries', path: countries_path }, { label: @country.name } ]
 
     %section.page-hero.mb-5
       .row.align-items-center.gy-4
