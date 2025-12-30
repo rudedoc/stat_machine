@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2025_12_29_122010) do
+ActiveRecord::Schema[8.1].define(version: 2025_12_29_130000) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
 
@@ -64,6 +64,17 @@ ActiveRecord::Schema[8.1].define(version: 2025_12_29_122010) do
     t.index ["betfair_competition_id"], name: "index_events_on_betfair_competition_id"
     t.index ["betfair_event_id"], name: "index_events_on_betfair_event_id", unique: true
     t.index ["football_api_id"], name: "index_events_on_football_api_id"
+  end
+
+  create_table "feed_sources", force: :cascade do |t|
+    t.datetime "created_at", null: false
+    t.string "feed_url", null: false
+    t.datetime "last_checked_at"
+    t.datetime "last_imported_at"
+    t.string "name", null: false
+    t.datetime "updated_at", null: false
+    t.index ["feed_url"], name: "index_feed_sources_on_feed_url", unique: true
+    t.index ["last_checked_at"], name: "index_feed_sources_on_last_checked_at"
   end
 
   create_table "markets", force: :cascade do |t|
