@@ -10,9 +10,29 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2025_12_29_130000) do
+ActiveRecord::Schema[8.1].define(version: 2025_12_30_174855) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
+
+  create_table "article_tags", force: :cascade do |t|
+    t.bigint "article_id", null: false
+    t.datetime "created_at", null: false
+    t.bigint "tag_id", null: false
+    t.datetime "updated_at", null: false
+    t.index ["article_id"], name: "index_article_tags_on_article_id"
+    t.index ["tag_id"], name: "index_article_tags_on_tag_id"
+  end
+
+  create_table "articles", force: :cascade do |t|
+    t.text "content"
+    t.datetime "created_at", null: false
+    t.bigint "feed_source_id", null: false
+    t.datetime "published_at"
+    t.string "title"
+    t.datetime "updated_at", null: false
+    t.string "url"
+    t.index ["feed_source_id"], name: "index_articles_on_feed_source_id"
+  end
 
   create_table "competitions", force: :cascade do |t|
     t.string "betfair_id", null: false
@@ -100,6 +120,15 @@ ActiveRecord::Schema[8.1].define(version: 2025_12_29_130000) do
     t.index ["competitor_id"], name: "index_prices_on_competitor_id"
   end
 
+  create_table "tags", force: :cascade do |t|
+    t.string "aliases", default: [], array: true
+    t.string "category"
+    t.datetime "created_at", null: false
+    t.string "name"
+    t.datetime "updated_at", null: false
+    t.index ["aliases"], name: "index_tags_on_aliases", using: :gin
+  end
+
   create_table "users", force: :cascade do |t|
     t.datetime "created_at", null: false
     t.string "display_name"
@@ -112,6 +141,9 @@ ActiveRecord::Schema[8.1].define(version: 2025_12_29_130000) do
     t.index ["firebase_uid"], name: "index_users_on_firebase_uid", unique: true
   end
 
+  add_foreign_key "article_tags", "articles"
+  add_foreign_key "article_tags", "tags"
+  add_foreign_key "articles", "feed_sources"
   add_foreign_key "competitors", "markets"
   add_foreign_key "markets", "events"
   add_foreign_key "prices", "competitors"

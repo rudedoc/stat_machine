@@ -20,8 +20,17 @@ class FeedSourceEntryFetcher
     return [] unless body
 
     entries = parse_entries(body)
-    mark_imported! if entries.any?
-    entries
+
+    if entries.any?
+      mark_imported!
+      # OPTION A: Process immediately (Slow)
+      # entries.each { |entry| FeedEntryProcessor.new(entry, feed_source).call }
+
+      # OPTION B: Return entries to caller (Better Separation of Concerns)
+      entries
+    else
+      []
+    end
   end
 
   private

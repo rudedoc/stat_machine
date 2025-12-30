@@ -74,3 +74,5 @@ gem "httparty", "~> 0.23.2"
 gem "countries", "~> 8.0"
 
 gem "rss", "~> 0.3.2"
+
+gem "ruby-openai", "~> 8.3"
