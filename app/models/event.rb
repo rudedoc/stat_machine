@@ -59,7 +59,7 @@ class Event < ApplicationRecord
     return [] if tag_ids.empty?
 
     Article
-      .includes(:feed_source)
+      .includes(:feed_source, article_tags: :tag)
       .where(id: ArticleTag.select(:article_id).where(tag_id: tag_ids))
       .order(Arel.sql('COALESCE(articles.published_at, articles.created_at) DESC'))
       .limit(limit)

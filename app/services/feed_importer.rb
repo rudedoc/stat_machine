@@ -58,7 +58,8 @@ class FeedImporter
         cleaned_name = clean_entity_name(team_name)
         next if cleaned_name.blank?
 
-        tag = Tag.find_or_create_by(name: cleaned_name, category: 'team')
+        tag = Tag.find_or_create_by_name_or_alias!(cleaned_name, category: 'team')
+        next unless tag
         upsert_article_tag(
           article,
           tag,
@@ -71,7 +72,8 @@ class FeedImporter
         cleaned_name = clean_entity_name(person_name)
         next if cleaned_name.blank?
 
-        tag = Tag.find_or_create_by(name: cleaned_name, category: 'person')
+        tag = Tag.find_or_create_by_name_or_alias!(cleaned_name, category: 'person')
+        next unless tag
         upsert_article_tag(
           article,
           tag,

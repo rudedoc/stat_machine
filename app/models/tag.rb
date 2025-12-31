@@ -15,12 +15,14 @@ class Tag < ApplicationRecord
   scope :teams, -> { where(category: 'team') }
   scope :players, -> { where(category: 'person') }
 
-  def self.identify(raw_text)
+  def self.identify(raw_text, category: nil)
     clean_text = raw_text.to_s.downcase.strip
     return nil if clean_text.blank?
 
+    relation = category.present? ? where(category: category) : all
+
     # 1. Check the standard columns (Exact match)
-    match = where("lower(name) = ?", clean_text).first
+    match = relation.where("lower(name) = ?", clean_text).first
     return match if match
 
     alias_match_sql = <<~SQL.squish
@@ -31,12 +33,42 @@ class Tag < ApplicationRecord
       )
     SQL
 
-    where(alias_match_sql, clean_text).first
+    relation.where(alias_match_sql, clean_text).first
+  end
+
+  def self.find_or_create_by_name_or_alias!(raw_text, category:)
+    clean_text = raw_text.to_s.strip
+    return nil if clean_text.blank?
+
+    identify(clean_text, category: category) || create!(name: clean_text, category: category)
   end
 
   def matches?(text)
     downcased = text.to_s.downcase
     name.to_s.downcase == downcased || Array(aliases).any? { |alias_name| alias_name.to_s.downcase == downcased }
+  end
+
+  # Reassigns taggings and article tags from alias records back to the canonical tag
+  def merge_duplicate_alias_records!(candidate_names = aliases)
+    normalized_names = Array(candidate_names).map { |value| value.to_s.downcase.strip }
+                                         .reject(&:blank?).uniq
+    return 0 if normalized_names.empty?
+
+    duplicates = Tag.where(category: category)
+                    .where("LOWER(name) IN (?)", normalized_names)
+                    .where.not(id: id)
+
+    merged = 0
+
+    transaction do
+      duplicates.find_each do |duplicate|
+        merged += 1
+        reassign_alias_records!(duplicate)
+        duplicate.destroy!
+      end
+    end
+
+    merged
   end
 
   private
@@ -52,5 +84,41 @@ class Tag < ApplicationRecord
 
   def link_related_entities
     TagLinker.link_tag!(self)
+  end
+
+  def reassign_alias_records!(duplicate)
+    duplicate.taggings.find_each do |tagging|
+      existing = Tagging.find_by(tag_id: id,
+                                 taggable_type: tagging.taggable_type,
+                                 taggable_id: tagging.taggable_id)
+
+      if existing
+        tagging.destroy!
+      else
+        tagging.update!(tag: self)
+      end
+    end
+
+    duplicate.article_tags.find_each do |article_tag|
+      existing = ArticleTag.find_by(article_id: article_tag.article_id, tag_id: id)
+
+      if existing
+        if prefer_article_tag_update?(existing, article_tag)
+          existing.update!(sentiment: article_tag.sentiment,
+                           sentiment_score: article_tag.sentiment_score)
+        end
+
+        article_tag.destroy!
+      else
+        article_tag.update!(tag: self)
+      end
+    end
+  end
+
+  def prefer_article_tag_update?(current, incoming)
+    return false if incoming.sentiment.blank?
+
+    current.sentiment == 'neutral' && incoming.sentiment != 'neutral' ||
+      incoming.sentiment_score.to_f.abs > current.sentiment_score.to_f.abs
   end
 end

@@ -12,7 +12,7 @@ class TagLinker
   def link_competitor!(competitor)
     return unless competitor&.name.present?
 
-    tag = Tag.identify(competitor.name)
+    tag = Tag.identify(competitor.name, category: 'team')
     return unless tag
 
     link_records(tag, competitor)
