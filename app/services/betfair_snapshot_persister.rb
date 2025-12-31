@@ -77,7 +77,7 @@ class BetfairSnapshotPersister
     # If not, add migration: add_column :competitors, :exchange_data, :jsonb, default: {}
     current_data = competitor.attributes["exchange_data"] || {} rescue {}
     
-      competitor.assign_attributes(
+    competitor.assign_attributes(
       name: runner[:name],
       exchange_data: current_data.merge({
         total_matched: runner[:total_matched],     # PASSED!
@@ -87,6 +87,8 @@ class BetfairSnapshotPersister
       })
     )
     competitor.save!
+
+    TagLinker.link_competitor!(competitor)
 
     # Price History Logic (Unchanged)
     percentage = normalize_percentage(runner[:percentage])
