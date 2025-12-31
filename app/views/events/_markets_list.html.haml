@@ -1,0 +1,90 @@
+%section.page-section.pt-0
+  - if markets.present?
+    .row
+      .col-12
+        - markets.each do |market|
+          .card.mb-4.shadow-sm.border-0
+            .card-header.bg-white.border-bottom.d-flex.justify-content-between.align-items-center.py-3
+              %div
+                %h2.h5.mb-0.fw-bold= market.name
+                %small.text-muted.font-monospace= "ID: #{market.betfair_market_id}"
+              %div.text-end
+                - if market.inplay?
+                  %span.badge.bg-danger.me-2.animate-pulse LIVE
+                - if market.status.present?
+                  %span.badge.bg-light.text-dark.border= market.status
+
+            .card-body.p-0
+              - if market.competitors.any?
+                .table-responsive
+                  %table.table.table-hover.align-middle.mb-0
+                    %thead.table-light.text-muted.small.text-uppercase
+                      %tr
+                        %th.ps-4 Competitor
+                        %th.text-center Last Price
+                        %th.text-center Liquidity & Spread
+                        %th.text-end Implied Prob
+                        %th.text-end.pe-4 History
+                    %tbody
+                      - market.competitors.each do |competitor|
+                        - price = competitor.latest_price
+                        - history = competitor.recent_prices
+                        - ex_data = competitor.exchange_data || {}
+                        - spread = ex_data['spread'].to_f
+                        - volume = ex_data['total_matched'].to_f
+                        - last_traded = ex_data['last_price_traded']
+
+                        -# Spread Color Logic: Tight spreads (< 0.10) are Green (Good). Wide spreads are Red.
+                        - spread_color = spread > 0.5 ? 'bg-danger bg-opacity-10 text-danger' : (spread > 0.1 ? 'bg-warning bg-opacity-10 text-dark' : 'bg-success bg-opacity-10 text-success')
+                        - spread_color = 'bg-light text-muted' if spread.zero? && volume.zero?
+
+                        %tr
+                          %td.ps-4.fw-bold
+                            %div= competitor.name
+                            - if competitor.tags.any?
+                              .d-flex.flex-wrap.gap-1.mt-2
+                                - competitor.tags.each do |tag|
+                                  %span.small{ class: "badge rounded-pill #{tag_badge_class(tag)}", title: tag_category_label(tag) }
+                                    = tag.name
+
+                          -# Column: Last Traded Price
+                          %td.text-center
+                            - if last_traded
+                              %span.font-monospace.fw-bold.fs-6= last_traded
+                            - else
+                              %span.text-muted -
+
+                          -# Column: Liquidity & Spread
+                          %td.text-center
+                            .d-flex.flex-column.align-items-center
+                              -# Volume
+                              %span.small.fw-bold.mb-1
+                                = number_to_currency(volume, unit: "£", precision: 0)
+
+                              -# Spread Badge
+                              - if spread > 0
+                                %span.badge.rounded-pill.border{ class: spread_color }
+                                  Spread: #{spread}
+                              - else
+                                %span.badge.bg-light.text-muted.border Low Liq
+
+                          -# Column: Implied Probability (from your calculator)
+                          %td.text-end
+                            - if price&.percentage
+                              %span.fs-6= "#{price.percentage.to_f.round(1)}%"
+                            - else
+                              %span.text-muted --
+
+                          -# Column: Price History
+                          %td.text-end.pe-4
+                            - if history.any?
+                              .d-flex.flex-wrap.justify-content-end.gap-1
+                                - history.first(3).each do |historic_price|
+                                  %span.badge.bg-light.text-secondary.border
+                                    = "#{historic_price.percentage.to_f.round(1)}%"
+                            - else
+                              %span.text-muted.small No Data
+  - else
+    .empty-state.mb-4
+      %p.text-muted.mb-2 No markets have been captured for this event yet.
+      %p.text-muted.mb-0 Try syncing from Betfair again to populate market depth.
