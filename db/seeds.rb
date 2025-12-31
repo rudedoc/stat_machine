@@ -45,11 +45,11 @@ teams_data = [
   },
   {
     name: "Leeds United",
-    aliases: ["Leeds", "lufc", "whites", "peacocks", "elland road"]
+    aliases: ["leeds united","leeds", "lufc", "whites", "peacocks", "elland road"]
   },
   {
     name: "Leicester City",
-    aliases: ["Leicester", "foxes", "lcfc", "lei"]
+    aliases: ["leicester", "foxes", "lcfc", "lei"]
   },
   {
     name: "Liverpool",
@@ -57,23 +57,23 @@ teams_data = [
   },
   {
     name: "Manchester City",
-    aliases: ["Man City", "city", "mcfc", "citizens", "sky blues", "pep"]
+    aliases: ["man city", "city", "mcfc", "citizens", "sky blues", "pep"]
   },
   {
     name: "Manchester United",
-    aliases: ["Man Utd", "man u", "united", "mufc", "red devils", "man united", "ten hag"]
+    aliases: ["man utd", "man u", "united", "mufc", "red devils", "man united", "ten hag"]
   },
   {
     name: "Newcastle United",
-    aliases: ["Newcastle", "nufc", "magpies", "toon", "geordies", "new"]
+    aliases: ["newcastle", "nufc", "magpies", "toon", "geordies", "new"]
   },
   {
     name: "Nottingham Forest",
-    aliases: ["Nottm Forest", "forest", "nffc", "tricky trees", "reds"]
+    aliases: ["nottm forest", "forest", "nffc", "tricky trees", "reds"]
   },
   {
     name: "Sheffield United",
-    aliases: ["Sheff Utd", "blades", "sufc"]
+    aliases: ["sheff utd", "blades", "sufc"]
   },
   {
     name: "Southampton",

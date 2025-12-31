@@ -94,6 +94,17 @@
               %span.badge.bg-success.bg-opacity-25.text-white= primary_market.status.titleize
 
     %section.page-section.pt-0
+      - if event_tags.any?
+        .row.mb-4
+          .col-lg-12
+            .surface-card.h-100
+              %span.eyebrow.text-primary.mb-2 Event Sentiment
+              %h3.h5.fw-bold.mb-2 Media tone for related tags
+              %p.text-muted.small.mb-3 Averaged from per-entity article tagging pulled by the EntityExtractor.
+              .d-flex.flex-column.gap-3
+                - event_tags.each do |tag|
+                  = render 'events/tag_sentiment', tag: tag, sentiment_snapshot: @tag_sentiments[tag.id]
+
       - if @related_articles.any?
         .row.mb-4
           .col-lg-12

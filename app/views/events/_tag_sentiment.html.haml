@@ -1,0 +1,29 @@
+- sentiment_snapshot = local_assigns[:sentiment_snapshot]
+- average_score = sentiment_snapshot&.dig(:avg_score)
+- sentiment_label = sentiment_snapshot&.dig(:sentiment) || 'neutral'
+- mentions = sentiment_snapshot&.dig(:total_mentions).to_i
+- percent_fill = sentiment_snapshot ? sentiment_score_percent(average_score) : 0
+
+.tag-sentiment-chip.p-3.rounded-3.bg-white.bg-opacity-10.border.border-white.border-opacity-10
+  .d-flex.justify-content-between.align-items-start.gap-3
+    %div
+      %div.fw-semibold= tag.name
+      %small= tag_category_label(tag)
+    %div.text-end
+      %span.badge.rounded-pill{ class: sentiment_indicator_badge_class(sentiment_label) }
+        = sentiment_label.titleize
+      %div.small
+        - if sentiment_snapshot
+          = pluralize(mentions, 'article')
+        - else
+          No coverage yet
+  - if sentiment_snapshot
+    .progress.mt-3{ style: 'height: 8px; background: rgba(255,255,255,0.15);' }
+      .progress-bar{ class: sentiment_indicator_bar_class(sentiment_label), style: "width: #{percent_fill}%" }
+    .d-flex.flex-wrap.justify-content-between.align-items-center.mt-2.gap-2
+      %small Avg score
+      %div.text-end
+        %strong.me-2= sentiment_score_display(average_score)
+        %small= sentiment_breakdown_label(sentiment_snapshot)
+  - else
+    %p.small.mb-0.mt-3 Sentiment data will display once connected articles mention this tag.

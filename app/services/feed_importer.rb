@@ -48,20 +48,80 @@ class FeedImporter
     # 1. Call the AI service
     result = EntityExtractor.new(article.content).call
 
+    team_sentiments = sentiment_lookup(result["team_sentiments"])
+    person_sentiments = sentiment_lookup(result["person_sentiments"])
+
     # 2. Save Tags in a Transaction
     Article.transaction do
       # Tag Teams
       Array(result["teams"]).each do |team_name|
-        # Normalize name (optional): team_name.strip.titleize
-        tag = Tag.find_or_create_by(name: team_name, category: 'team')
-        ArticleTag.find_or_create_by(article: article, tag: tag)
+        cleaned_name = clean_entity_name(team_name)
+        next if cleaned_name.blank?
+
+        tag = Tag.find_or_create_by(name: cleaned_name, category: 'team')
+        upsert_article_tag(
+          article,
+          tag,
+          team_sentiments[normalize_entity_name(cleaned_name)]
+        )
       end
 
       # Tag Persons
       Array(result["persons"]).each do |person_name|
-        tag = Tag.find_or_create_by(name: person_name, category: 'person')
-        ArticleTag.find_or_create_by(article: article, tag: tag)
+        cleaned_name = clean_entity_name(person_name)
+        next if cleaned_name.blank?
+
+        tag = Tag.find_or_create_by(name: cleaned_name, category: 'person')
+        upsert_article_tag(
+          article,
+          tag,
+          person_sentiments[normalize_entity_name(cleaned_name)]
+        )
       end
     end
+  end
+
+  def sentiment_lookup(entries)
+    Array(entries).each_with_object({}) do |entry, memo|
+      normalized_name = normalize_entity_name(entry["name"])
+      next if normalized_name.blank?
+
+      memo[normalized_name] = {
+        sentiment: sanitize_sentiment(entry["sentiment"]),
+        sentiment_score: sanitize_score(entry["score"])
+      }
+    end
+  end
+
+  def upsert_article_tag(article, tag, sentiment_attributes)
+    attributes = sentiment_attributes || default_sentiment_attributes
+    article_tag = ArticleTag.find_or_initialize_by(article: article, tag: tag)
+    article_tag.assign_attributes(attributes)
+    article_tag.save! if article_tag.changed?
+  end
+
+  def clean_entity_name(name)
+    name.to_s.strip
+  end
+
+  def normalize_entity_name(name)
+    clean_entity_name(name).downcase
+  end
+
+  def sanitize_sentiment(value)
+    sentiment = value.to_s.downcase
+    return sentiment if ArticleTag::SENTIMENT_VALUES.include?(sentiment)
+
+    'neutral'
+  end
+
+  def sanitize_score(value)
+    value.to_f.clamp(-1.0, 1.0)
+  rescue NoMethodError
+    0.0
+  end
+
+  def default_sentiment_attributes
+    { sentiment: 'neutral', sentiment_score: 0.0 }
   end
 end

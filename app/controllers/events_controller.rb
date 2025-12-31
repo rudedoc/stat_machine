@@ -17,6 +17,7 @@ class EventsController < ApplicationController
     @country = Country.find_by(country_code: @competition&.country_code)
     @markets = @event.markets
     @related_articles = @event.related_articles
+    @tag_sentiments = ArticleTag.sentiment_summary_for(@event.tags.map(&:id))
   end
 
   private

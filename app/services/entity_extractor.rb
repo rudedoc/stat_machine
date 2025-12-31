@@ -6,15 +6,25 @@ class EntityExtractor
     Rules:
     1. Extract specific "teams" (clubs or national teams).
     2. Extract specific "persons" (players, managers, referees).
-    3. Determine the "sentiment" of the news (positive, negative, neutral).
-    4. Ignore generic terms like "the club" or "the striker".
-    5. Return ONLY raw JSON. No markdown formatting.
+    3. Determine the overall "sentiment" of the news (positive, negative, neutral).
+    4. Provide a sentiment label and a normalized score between -1 and 1 for every extracted team and person (negative < 0 < positive, 0 is neutral).
+    5. Sentiment entries must reference the exact entity names you extracted.
+    6. Ignore generic terms like "the club" or "the striker".
+    7. Return ONLY raw JSON. No markdown formatting.
 
     Output Format:
     {
       "teams": ["Liverpool", "Arsenal"],
       "persons": ["Mohamed Salah", "Mikel Arteta"],
-      "sentiment": "neutral"
+      "sentiment": "neutral",
+      "team_sentiments": [
+        {"name": "Liverpool", "sentiment": "positive", "score": 0.72},
+        {"name": "Arsenal", "sentiment": "negative", "score": -0.31}
+      ],
+      "person_sentiments": [
+        {"name": "Mohamed Salah", "sentiment": "positive", "score": 0.84},
+        {"name": "Mikel Arteta", "sentiment": "neutral", "score": 0.05}
+      ]
     }
   TEXT
 
@@ -42,7 +52,7 @@ class EntityExtractor
 
     # 3. Parse Response
     content = response.dig("choices", 0, "message", "content")
-    JSON.parse(content)
+    normalize_result(JSON.parse(content))
 
   rescue JSON::ParserError => e
     Rails.logger.error("EntityExtractor JSON Error: #{e.message}")
@@ -54,7 +64,17 @@ class EntityExtractor
 
   private
 
+  def normalize_result(result)
+    # Ensure downstream code always receives the same structure
+    result["teams"] ||= []
+    result["persons"] ||= []
+    result["sentiment"] ||= "neutral"
+    result["team_sentiments"] ||= []
+    result["person_sentiments"] ||= []
+    result
+  end
+
   def empty_result
-    { "teams" => [], "persons" => [], "sentiment" => "neutral" }
+    normalize_result({})
   end
 end
