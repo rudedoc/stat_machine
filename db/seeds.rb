@@ -56,19 +56,10 @@ end
 
 puts "Seeding Competitions done! #{Competition.count} competitions seeded."
 
-
 # Helper method to normalize alias lists - TEAMS
-
-def normalize_alias_list(values)
-  Array(values).map { |value| value.to_s.downcase.gsub(/\s+/, " ").strip }
+def normalize_alias_list(team_data)
+  Array(team_data[:aliases]).map { |value| value.to_s.downcase.gsub(/\s+/, " ").strip }
                .reject(&:blank?).uniq
-end
-
-def normalized_aliases_for(team_data)
-  betfair_names = normalize_alias_list(team_data[:betfair_names])
-  manual_aliases = normalize_alias_list(team_data[:aliases])
-
-  (betfair_names + manual_aliases).uniq
 end
 
 teams_path = Rails.root.join("db/seeds/teams.yml")
@@ -77,7 +68,7 @@ teams_data = Array(YAML.load_file(teams_path)).map { |h| h.deep_symbolize_keys }
 puts "Seeding Teams..."
 
 teams_data.each do |team_data|
-  alias_values = normalized_aliases_for(team_data)
+  alias_values = normalize_alias_list(team_data)
 
   # We match on name and category to prevent duplicates
   tag = Tag.find_or_initialize_by(name: team_data[:name], category: 'team')
@@ -101,7 +92,7 @@ BetfairApi.import_all_data!
 
 puts "Synchronizing matches from Football API..."
 
-# FootballApiService.new.sync_matches
+FootballApiService.sync_upcoming_competitions!
 
 # # call rake feeds:import_all task to import feeds after seeding
 # Rake::Task["feeds:import_all"].invoke

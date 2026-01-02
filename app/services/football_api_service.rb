@@ -177,11 +177,24 @@ class FootballApiService
     normalized_key = normalize_team_name(raw_name)
     return nil if normalized_key.blank?
 
-    team_tag_cache[normalized_key] ||= Tag.identify(raw_name, category: 'team')
+    return team_tag_cache[normalized_key] if team_tag_cache.key?(normalized_key)
+
+    tag = Tag.identify(raw_name, category: 'team')
+    team_tag_cache[normalized_key] = tag
+    log_missing_team_tag(raw_name) unless tag
+    tag
   end
 
   def team_tag_cache
     @team_tag_cache ||= {}
+  end
+
+  def log_missing_team_tag(raw_name)
+    self.class.missing_tag_logger.warn("Team tag not identified for '#{raw_name}'")
+  end
+
+  def self.missing_tag_logger
+    @missing_tag_logger ||= ::Logger.new(Rails.root.join('log', 'football_api_missing_tags.log'))
   end
 
   def normalize_team_name(value)
