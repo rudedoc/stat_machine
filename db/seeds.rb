@@ -3,6 +3,61 @@ require "yaml"
 
 # db/seeds.rb
 
+feed_sources_path = Rails.root.join("db", "rss_feeds.csv")
+
+if File.exist?(feed_sources_path)
+  CSV.foreach(feed_sources_path, headers: true) do |row|
+    name = row["Source Name"].to_s.strip
+    feed_url = row["Feed URL"].to_s.strip
+    next if name.blank? || feed_url.blank?
+
+    FeedSource.find_or_initialize_by(feed_url: feed_url).tap do |feed|
+      feed.name = name
+      feed.save!
+    end
+  end
+end
+
+puts "Seeding Feed Sources done! #{FeedSource.count} sources seeded."
+
+countries_path = Rails.root.join("db/seeds/countries.yml")
+countries = Array(YAML.load_file(countries_path))
+
+countries.each do |attrs|
+  country = Country.find_or_initialize_by(country_code: attrs["country_code"])
+  country.assign_attributes(
+    name: attrs["name"],
+    betfair_name: attrs["betfair_name"],
+    flag: attrs["flag"],
+    region: attrs["region"],
+    subregion: attrs["subregion"]
+  )
+  country.synced_at ||= Time.current
+  country.save!
+end
+
+puts "Seeding Countries done! #{Country.count} countries seeded."
+
+competitions_path = Rails.root.join("db/seeds/competitions.yml")
+competitions = YAML.load_file(competitions_path)
+
+competitions.each do |attrs|
+  comp = Competition.find_or_initialize_by(betfair_id: attrs["betfair_id"])
+  comp.assign_attributes(
+    name: attrs["name"],
+    competition_region: attrs["competition_region"],
+    country_code: attrs["country_code"],
+    football_api_league_id: attrs["football_api_league_id"] # will be nil until you populate it
+  )
+  comp.synced_at ||= Time.current
+  comp.save!
+end
+
+puts "Seeding Competitions done! #{Competition.count} competitions seeded."
+
+
+# Helper method to normalize alias lists - TEAMS
+
 def normalize_alias_list(values)
   Array(values).map { |value| value.to_s.downcase.gsub(/\s+/, " ").strip }
                .reject(&:blank?).uniq
@@ -40,39 +95,6 @@ end
 
 puts "\nDone! #{Tag.teams.count} teams seeded."
 
-feed_sources_path = Rails.root.join("db", "rss_feeds.csv")
-
-if File.exist?(feed_sources_path)
-  CSV.foreach(feed_sources_path, headers: true) do |row|
-    name = row["Source Name"].to_s.strip
-    feed_url = row["Feed URL"].to_s.strip
-    next if name.blank? || feed_url.blank?
-
-    FeedSource.find_or_initialize_by(feed_url: feed_url).tap do |feed|
-      feed.name = name
-      feed.save!
-    end
-  end
-end
-
-require "yaml"
-
-competitions_path = Rails.root.join("db/seeds/competitions.yml")
-competitions = YAML.load_file(competitions_path)
-
-competitions.each do |attrs|
-  comp = Competition.find_or_initialize_by(betfair_id: attrs["betfair_id"])
-  comp.assign_attributes(
-    name: attrs["name"],
-    competition_region: attrs["competition_region"],
-    country_code: attrs["country_code"],
-    football_api_league_id: attrs["football_api_league_id"] # will be nil until you populate it
-  )
-  comp.synced_at ||= Time.current
-  comp.save!
-end
-
-puts "Seeding Feed Sources done! #{FeedSource.count} sources seeded."
 
 # BetfairApi.import_all_data!
 
