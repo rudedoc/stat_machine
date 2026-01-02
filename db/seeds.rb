@@ -1,4 +1,5 @@
 require "csv"
+require "yaml"
 
 # db/seeds.rb
 
@@ -14,123 +15,8 @@ def normalized_aliases_for(team_data)
   (betfair_names + manual_aliases).uniq
 end
 
-teams_data = [
-  {
-    name: "Arsenal",
-    betfair_names: [],
-    aliases: ["gunners", "gooners", "ars", "afc"]
-  },
-  {
-    name: "Aston Villa",
-    betfair_names: [],
-    aliases: ["villa", "avfc", "villans", "claret and blue"]
-  },
-  {
-    name: "Bournemouth",
-    betfair_names: ["afc bournemouth"],
-    aliases: ["cherries", "afcb", "boscombe"]
-  },
-  {
-    name: "Brentford",
-    betfair_names: [],
-    aliases: ["bees", "brentford fc"]
-  },
-  {
-    name: "Brighton & Hove Albion",
-    betfair_names: ["brighton", "brighton and hove albion"],
-    aliases: ["seagulls", "bha", "bhafc", "albion"]
-  },
-  {
-    name: "Burnley",
-    betfair_names: [],
-    aliases: ["clarets", "bfc", "turf moor"]
-  },
-  {
-    name: "Chelsea",
-    betfair_names: [],
-    aliases: ["blues", "cfc", "chelsea fc", "che", "pensioners"]
-  },
-  {
-    name: "Crystal Palace",
-    betfair_names: [],
-    aliases: ["palace", "cpfc", "eagles", "selhurst"]
-  },
-  {
-    name: "Everton",
-    betfair_names: [],
-    aliases: ["toffees", "efc", "blues", "school of science"]
-  },
-  {
-    name: "Fulham",
-    betfair_names: [],
-    aliases: ["cottagers", "ffc", "whites"]
-  },
-  {
-    name: "Leeds United",
-    betfair_names: ["leeds", "leeds utd"],
-    aliases: ["lufc", "whites", "peacocks", "elland road"]
-  },
-  {
-    name: "Leicester City",
-    betfair_names: ["leicester"],
-    aliases: ["foxes", "lcfc", "lei"]
-  },
-  {
-    name: "Liverpool",
-    betfair_names: [],
-    aliases: ["reds", "lfc", "kop", "pool", "liv"]
-  },
-  {
-    name: "Manchester City",
-    betfair_names: ["man city"],
-    aliases: ["city", "mcfc", "citizens", "sky blues", "pep"]
-  },
-  {
-    name: "Manchester United",
-    betfair_names: ["man utd", "man u", "man united"],
-    aliases: ["united", "mufc", "red devils", "ten hag"]
-  },
-  {
-    name: "Newcastle United",
-    betfair_names: ["newcastle"],
-    aliases: ["nufc", "magpies", "toon", "geordies", "new"]
-  },
-  {
-    name: "Nottingham Forest",
-    betfair_names: ["nottm forest"],
-    aliases: ["forest", "nffc", "tricky trees", "reds"]
-  },
-  {
-    name: "Sheffield United",
-    betfair_names: ["sheff utd"],
-    aliases: ["blades", "sufc"]
-  },
-  {
-    name: "Southampton",
-    betfair_names: [],
-    aliases: ["saints", "sfc"]
-  },
-  {
-    name: "Sunderland",
-    betfair_names: [],
-    aliases: ["black cats", "safc", "mackems"]
-  },
-  {
-    name: "Tottenham Hotspur",
-    betfair_names: ["tottenham", "spurs"],
-    aliases: ["thfc", "lilywhites", "tot"]
-  },
-  {
-    name: "West Ham United",
-    betfair_names: ["west ham"],
-    aliases: ["hammers", "whufc", "irons", "whu"]
-  },
-  {
-    name: "Wolverhampton Wanderers",
-    betfair_names: ["wolves", "wolverhampton"],
-    aliases: ["wwfc", "wanderers"]
-  }
-]
+teams_path = Rails.root.join("db/seeds/teams.yml")
+teams_data = Array(YAML.load_file(teams_path)).map { |h| h.deep_symbolize_keys }
 
 puts "Seeding Teams..."
 
@@ -169,15 +55,32 @@ if File.exist?(feed_sources_path)
   end
 end
 
+require "yaml"
+
+competitions_path = Rails.root.join("db/seeds/competitions.yml")
+competitions = YAML.load_file(competitions_path)
+
+competitions.each do |attrs|
+  comp = Competition.find_or_initialize_by(betfair_id: attrs["betfair_id"])
+  comp.assign_attributes(
+    name: attrs["name"],
+    competition_region: attrs["competition_region"],
+    country_code: attrs["country_code"],
+    football_api_league_id: attrs["football_api_league_id"] # will be nil until you populate it
+  )
+  comp.synced_at ||= Time.current
+  comp.save!
+end
+
 puts "Seeding Feed Sources done! #{FeedSource.count} sources seeded."
 
-BetfairApi.import_all_data!
+# BetfairApi.import_all_data!
 
-puts "Synchronizing matches from Football API..."
+# puts "Synchronizing matches from Football API..."
 
-FootballApiService.new.sync_matches
+# FootballApiService.new.sync_matches
 
-# call rake feeds:import_all task to import feeds after seeding
-Rake::Task["feeds:import_all"].invoke
+# # call rake feeds:import_all task to import feeds after seeding
+# Rake::Task["feeds:import_all"].invoke
 
-puts "Seeding complete."
+# puts "Seeding complete."
