@@ -6,10 +6,6 @@ class EventsController < ApplicationController
   def index
     @country = Country.find_by(country_code: @competition.country_code)
     @events = event_scope
-    if @events.empty?
-      BetfairSnapshotPersister.persist_for_competition!(@competition.betfair_id)
-      @events = event_scope
-    end
   end
 
   def show

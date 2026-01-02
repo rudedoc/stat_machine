@@ -47,7 +47,8 @@ competitions.each do |attrs|
     name: attrs["name"],
     competition_region: attrs["competition_region"],
     country_code: attrs["country_code"],
-    football_api_league_id: attrs["football_api_league_id"] # will be nil until you populate it
+    football_api_league_id: attrs["football_api_league_id"], # will be nil until you populate it
+    position: attrs["position"]
   )
   comp.synced_at ||= Time.current
   comp.save!
