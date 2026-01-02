@@ -10,9 +10,32 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2025_12_29_122010) do
+ActiveRecord::Schema[8.1].define(version: 2025_12_30_210100) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
+
+  create_table "article_tags", force: :cascade do |t|
+    t.bigint "article_id", null: false
+    t.datetime "created_at", null: false
+    t.string "sentiment", default: "neutral", null: false
+    t.float "sentiment_score", default: 0.0, null: false
+    t.bigint "tag_id", null: false
+    t.datetime "updated_at", null: false
+    t.index ["article_id"], name: "index_article_tags_on_article_id"
+    t.index ["sentiment"], name: "index_article_tags_on_sentiment"
+    t.index ["tag_id"], name: "index_article_tags_on_tag_id"
+  end
+
+  create_table "articles", force: :cascade do |t|
+    t.text "content"
+    t.datetime "created_at", null: false
+    t.bigint "feed_source_id", null: false
+    t.datetime "published_at"
+    t.string "title"
+    t.datetime "updated_at", null: false
+    t.string "url"
+    t.index ["feed_source_id"], name: "index_articles_on_feed_source_id"
+  end
 
   create_table "competitions", force: :cascade do |t|
     t.string "betfair_id", null: false
@@ -66,6 +89,17 @@ ActiveRecord::Schema[8.1].define(version: 2025_12_29_122010) do
     t.index ["football_api_id"], name: "index_events_on_football_api_id"
   end
 
+  create_table "feed_sources", force: :cascade do |t|
+    t.datetime "created_at", null: false
+    t.string "feed_url", null: false
+    t.datetime "last_checked_at"
+    t.datetime "last_imported_at"
+    t.string "name", null: false
+    t.datetime "updated_at", null: false
+    t.index ["feed_url"], name: "index_feed_sources_on_feed_url", unique: true
+    t.index ["last_checked_at"], name: "index_feed_sources_on_last_checked_at"
+  end
+
   create_table "markets", force: :cascade do |t|
     t.string "betfair_market_id", null: false
     t.datetime "created_at", null: false
@@ -89,6 +123,26 @@ ActiveRecord::Schema[8.1].define(version: 2025_12_29_122010) do
     t.index ["competitor_id"], name: "index_prices_on_competitor_id"
   end
 
+  create_table "taggings", force: :cascade do |t|
+    t.datetime "created_at", null: false
+    t.bigint "tag_id", null: false
+    t.bigint "taggable_id", null: false
+    t.string "taggable_type", null: false
+    t.datetime "updated_at", null: false
+    t.index ["tag_id", "taggable_type", "taggable_id"], name: "index_taggings_on_tag_and_taggable", unique: true
+    t.index ["tag_id"], name: "index_taggings_on_tag_id"
+    t.index ["taggable_type", "taggable_id"], name: "index_taggings_on_taggable"
+  end
+
+  create_table "tags", force: :cascade do |t|
+    t.string "aliases", default: [], array: true
+    t.string "category"
+    t.datetime "created_at", null: false
+    t.string "name"
+    t.datetime "updated_at", null: false
+    t.index ["aliases"], name: "index_tags_on_aliases", using: :gin
+  end
+
   create_table "users", force: :cascade do |t|
     t.datetime "created_at", null: false
     t.string "display_name"
@@ -101,7 +155,11 @@ ActiveRecord::Schema[8.1].define(version: 2025_12_29_122010) do
     t.index ["firebase_uid"], name: "index_users_on_firebase_uid", unique: true
   end
 
+  add_foreign_key "article_tags", "articles"
+  add_foreign_key "article_tags", "tags"
+  add_foreign_key "articles", "feed_sources"
   add_foreign_key "competitors", "markets"
   add_foreign_key "markets", "events"
   add_foreign_key "prices", "competitors"
+  add_foreign_key "taggings", "tags"
 end

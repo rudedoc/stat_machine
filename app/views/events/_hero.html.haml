@@ -1,0 +1,67 @@
+%section.page-hero.mb-5
+  .row.align-items-center.gy-4
+    .col-lg-7
+      %p.hero-kicker= country&.name || 'Event Insight'
+      - if home_name && away_name
+        .matchup-stack.mb-4
+          .text-center
+            - if home_logo.present?
+              %img{ src: home_logo, width: 72, height: 72, alt: "#{home_name} badge" }
+            %p.small.text-white-50.mb-0= home_name
+          %span.vs-pill VS
+          .text-center
+            - if away_logo.present?
+              %img{ src: away_logo, width: 72, height: 72, alt: "#{away_name} badge" }
+            %p.small.text-white-50.mb-0= away_name
+        %h1.display-5.fw-bold.mb-3= "#{home_name} vs #{away_name}"
+      - else
+        %h1.display-5.fw-bold.mb-3= event.name
+      %p.lead.text-white-50.mb-4 Track AI probabilities, liquidity, and exchange movement before this fixture goes off.
+      .hero-meta
+        .meta-item
+          %span Kickoff
+          %strong= kickoff ? kickoff.strftime('%a %d %b · %H:%M %Z') : 'TBD'
+        .meta-item
+          %span Competition
+          %strong= competition&.name || 'Awaiting assignment'
+        .meta-item
+          %span Markets synced
+          %strong= markets_count
+        - if primary_market&.status.present?
+          .meta-item
+            %span Primary market
+            %strong= primary_market.status.titleize
+      - if event_tags.any?
+        .mt-4
+          %span.eyebrow.text-white-50 Event Tags
+          .d-flex.flex-wrap.gap-2.mt-2
+            - event_tags.each do |tag|
+              %span{ class: "badge rounded-pill #{tag_badge_class(tag)}", title: tag_category_label(tag) }
+                = tag.name
+    .col-lg-5
+      .glass-panel
+        %span.eyebrow.text-white-50 Market Signal
+        - if pred.present?
+          %h3.h5.text-white.fw-semibold.mb-3= pred.dig('predictions', 'advice') || 'Edge snapshot'
+          %p.text-white-50.mb-3 Model confidence split
+          .d-flex.flex-column.gap-2
+            %div.d-flex.justify-content-between.text-white-50
+              %span= home_name || 'Home'
+              %strong.text-white= perc&.dig('home') || '--'
+            %div.d-flex.justify-content-between.text-white-50
+              %span Draw
+              %strong.text-white= perc&.dig('draw') || '--'
+            %div.d-flex.justify-content-between.text-white-50
+              %span= away_name || 'Away'
+              %strong.text-white= perc&.dig('away') || '--'
+        - else
+          %h3.h5.text-white.fw-semibold.mb-2 Market intel in progress
+          %p.text-white-50.mb-3 Edge projections are syncing for this event. Check back shortly for AI probabilities.
+        .d-flex.flex-wrap.gap-2.mt-3
+          - if primary_market&.inplay?
+            %span.badge.bg-danger.text-white LIVE market
+          - if primary_market&.last_synced_label.present?
+            %span.badge.bg-light.text-dark= "Updated #{time_ago_in_words(primary_market.last_synced_label)} ago"
+          %span.badge.bg-dark.text-white= "#{markets_count} markets"
+        - if primary_market&.status.present?
+          %span.badge.bg-success.bg-opacity-25.text-white= primary_market.status.titleize

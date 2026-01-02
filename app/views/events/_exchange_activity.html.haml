@@ -1,0 +1,43 @@
+- exchange_data = event.exchange_data
+
+- if exchange_data.present?
+  %section.page-section.pt-0
+    .card.mb-4.shadow-sm.border-success.border-opacity-25
+      .card-header.bg-success.bg-opacity-10.d-flex.justify-content-between.align-items-center
+        %div
+          %i.bi.bi-currency-exchange.text-success.me-2
+          %span.fw-bold.text-success Exchange Activity
+        %div.small.text-muted
+          - if exchange_data['last_synced_at']
+            %i.bi.bi-clock-history.me-1
+            Updated
+            = time_ago_in_words(exchange_data['last_synced_at'])
+            ago
+
+      .card-body.py-3
+        .row.align-items-center.text-center
+          -# Column 1: Total Traded Volume
+          .col-md-6.border-end
+            .d-flex.flex-column
+              %span.text-uppercase.text-muted.small.fw-bold Total Traded
+              %span.display-6.fw-bold.text-dark
+                = number_to_currency(exchange_data['total_matched'], unit: "£", precision: 0)
+              %span.small.text-muted Matches actual bets placed
+
+          -# Column 2: Available Liquidity
+          .col-md-6
+            .d-flex.flex-column
+              %span.text-uppercase.text-muted.small.fw-bold Waiting Liquidity
+              %span.display-6.fw-bold.text-success
+                = number_to_currency(exchange_data['total_available'], unit: "£", precision: 0)
+              %span.small.text-muted Money waiting to be matched
+
+          -# Optional: Visual Progress Bar representing "Heat"
+          - matched = exchange_data['total_matched'].to_f
+          - available = exchange_data['total_available'].to_f
+          - total = matched + available
+          - if total > 0
+            .col-12.mt-3
+              .progress{ style: "height: 8px;" }
+                .progress-bar.bg-dark{ style: "width: #{(matched / total) * 100}%", title: "Matched" }
+                .progress-bar.bg-success{ style: "width: #{(available / total) * 100}%", title: "Available" }

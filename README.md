@@ -2,3 +2,4 @@
 
 Rebuild:
 `rm db/schema.rb && bin/rake db:drop db:create db:migrate db:seed`
+
