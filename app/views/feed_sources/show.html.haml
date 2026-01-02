@@ -1,0 +1,120 @@
+- content_for :title, @feed_source.name
+:ruby
+  feed = @feed_source
+  activity_time = feed.last_activity_at
+  last_imported = feed.last_imported_at
+  last_checked = feed.last_checked_at
+  status_badge_class = feed.recently_synced?(window: 24.hours) ? 'bg-success bg-opacity-10 text-success border border-success border-opacity-25' : 'bg-warning bg-opacity-10 text-warning border border-warning border-opacity-25'
+  status_label = feed.recently_synced?(window: 24.hours) ? 'Fresh' : 'Needs attention'
+  article_total = number_with_delimiter(@articles_count)
+  hero_subtitle = "#{article_total} articles processed"
+
+.page-shell.pb-5
+  .container
+    = render 'shared/breadcrumbs', items: [ { label: 'News coverage', path: feed_sources_path }, { label: feed.name } ]
+
+    %section.page-hero.mb-5
+      .row.align-items-center.gy-4
+        .col-lg-7
+          %p.hero-kicker Feed profile
+          %h1.display-5.fw-bold.mb-3= feed.name
+          %p.lead.text-white-50.mb-4
+            = hero_subtitle
+            pulled from #{feed.feed_url} and enriched with tags + sentiment for downstream event matching.
+          .hero-meta
+            .meta-item
+              %span Last activity
+              %strong= activity_time ? "#{time_ago_in_words(activity_time)} ago" : 'Pending'
+            .meta-item
+              %span Last import
+              %strong= last_imported ? time_ago_in_words(last_imported) : 'Not yet'
+            .meta-item
+              %span Last check
+              %strong= last_checked ? time_ago_in_words(last_checked) : 'Not yet'
+        .col-lg-5
+          .glass-panel
+            %div.d-flex.justify-content-between.align-items-start.mb-4
+              %div
+                %span.eyebrow.text-white-50.mb-1 Feed URL
+                %p.text-white.mb-0.small= feed.feed_url
+              %span.badge{ class: status_badge_class }= status_label
+            %p.text-white-50.mb-4
+              Monitor this feed's article cadence and tag sentiment to understand the coverage landscape powering Stat Machine predictions.
+            .d-flex.flex-wrap.gap-2
+              = link_to 'Open feed', feed.feed_url, target: '_blank', rel: 'noopener', class: 'btn btn-light btn-sm'
+              = link_to 'Back to feeds', feed_sources_path, class: 'btn btn-outline-light btn-sm'
+
+    %section.page-section.pt-0
+      .row.g-4
+        .col-lg-8
+          - if @recent_articles.any?
+            .surface-card.h-100
+              %div.d-flex.justify-content-between.align-items-center.mb-3
+                %div
+                  %span.eyebrow.text-primary.mb-1 Latest coverage
+                  %h3.h5.fw-bold.mb-0 Recent articles
+                %span.badge.bg-light.text-muted.border= pluralize(@recent_articles.size, 'article')
+              %p.text-muted.small.mb-4 Entries ordered by published date, capped at the most recent 25 items.
+              .list-group.list-group-flush
+                - @recent_articles.each do |article|
+                  - article_time = article.published_at || article.created_at
+                  %a.list-group-item.list-group-item-action.d-flex.justify-content-between.align-items-start.gap-3{ href: article.url, target: '_blank', rel: 'noopener' }
+                    .flex-grow-1
+                      %p.fw-semibold.mb-1= article.title
+                      - if article.content.present?
+                        %p.text-muted.small.mb-0= truncate(strip_tags(article.content), length: 180)
+                      - if article.article_tags.any?
+                        .article-tag-sentiments.mt-2
+                          .d-flex.flex-wrap.gap-2
+                            - article.article_tags.each do |article_tag|
+                              - tag = article_tag.tag
+                              - next unless tag
+                              - badge_class = sentiment_indicator_badge_class(article_tag.sentiment)
+                              %span.badge.rounded-pill.d-inline-flex.align-items-center.gap-2{ class: badge_class }
+                                %span.fw-semibold= tag.name
+                                %small= sentiment_score_display(article_tag.sentiment_score)
+                    .text-end.small.text-muted
+                      %div.fw-semibold= article_time ? time_ago_in_words(article_time) + ' ago' : 'Date unavailable'
+                      %div= article.feed_source&.name
+          - else
+            .empty-state
+              %p.text-muted.mb-3 No articles have been ingested for this feed.
+              %p.mb-0.small.text-muted Try running the feed importer or checking the RSS endpoint manually.
+        .col-lg-4
+          .surface-card.mb-4
+            %span.eyebrow.text-primary.mb-2 Feed telemetry
+            %h3.h5.fw-bold.mb-3 Health snapshot
+            %ul.list-unstyled.d-flex.flex-column.gap-3.mb-0
+              %li.d-flex.justify-content-between
+                %span.text-muted Total articles
+                %strong= article_total
+              %li.d-flex.justify-content-between
+                %span.text-muted Last imported
+                %strong= last_imported ? "#{time_ago_in_words(last_imported)} ago" : 'Not yet'
+              %li.d-flex.justify-content-between
+                %span.text-muted Last checked
+                %strong= last_checked ? "#{time_ago_in_words(last_checked)} ago" : 'Not yet'
+              %li.d-flex.justify-content-between
+                %span.text-muted Feed status
+                %strong= status_label
+          .surface-card
+            %span.eyebrow.text-primary.mb-2 Tag sentiment
+            %h3.h5.fw-bold.mb-3 Article entity mood
+            - if @tag_sentiments.present?
+              .d-flex.flex-column.gap-3
+                - sorted_sentiments = @tag_sentiments.sort_by { |_tag_id, summary| -summary[:total_mentions].to_i }
+                - sorted_sentiments.each do |tag_id, summary|
+                  - tag = @tag_lookup[tag_id]
+                  - next unless tag
+                  - badge_class = tag_badge_class(tag)
+                  - sentiment_badge = sentiment_indicator_badge_class(summary[:sentiment])
+                  - width_percent = (summary[:avg_score].to_f.abs * 100).round(1)
+                  .p-3.border.rounded-3
+                    %div.d-flex.justify-content-between.align-items-center.mb-2
+                      %span.badge{ class: badge_class }= tag.name
+                      %span.badge{ class: sentiment_badge }= summary[:sentiment].to_s.titleize
+                    .progress{ style: 'height: 0.5rem' }
+                      .progress-bar{ class: sentiment_indicator_bar_class(summary[:sentiment]), style: "width: #{width_percent}%" }
+                    %p.text-muted.small.mb-0= "#{summary[:total_mentions]} mentions · Avg score #{sentiment_score_display(summary[:avg_score])}"
+            - else
+              %p.text-muted.small.mb-0 Tagged articles have not been processed yet for this feed.

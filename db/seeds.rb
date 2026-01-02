@@ -87,12 +87,15 @@ end
 
 puts "\nDone! #{Tag.teams.count} teams seeded."
 
-
 BetfairApi.import_all_data!
+
+puts "Betfair data import complete."
 
 puts "Synchronizing matches from Football API..."
 
 FootballApiService.sync_upcoming_competitions!
+
+puts "Match synchronization complete."
 
 # # call rake feeds:import_all task to import feeds after seeding
 # Rake::Task["feeds:import_all"].invoke

@@ -7,6 +7,7 @@ namespace :feeds do
     # Iterate over all sources
     FeedSource.find_each do |source|
       begin
+        puts "Importing feed: #{source.name} (#{source.feed_url})"
         FeedImporter.new(source).call
       rescue StandardError => e
         # Ensure one failing feed doesn't crash the entire batch

@@ -3,6 +3,8 @@ Rails.application.routes.draw do
   root "pages#home"
   get "profile", to: "pages#profile", as: :profile
 
+  resources :feed_sources, only: [:index, :show]
+
   namespace :api do
     namespace :v1 do
       resource :profile, only: [:show, :update]

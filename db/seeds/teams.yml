@@ -1,3 +1,6 @@
+# Seed data for football teams and their aliases
+
+# Great Britain Teams
 - name: "Arsenal"
   aliases: ["gunners", "gooners", "ars", "afc"]
 
@@ -66,3 +69,192 @@
 
 - name: "Wolverhampton Wanderers"
   aliases: ["wwfc", "wanderers", "wolves", "wolverhampton"]
+
+# Australian A-League Men
+- name: "Adelaide United"
+  aliases: ["adelaide", "adelaide united fc", "aufc", "reds", "the reds"]
+
+- name: "Auckland"
+  aliases: ["auckland fc", "auckland football club", "akl", "akl fc", "auckland a-league"]
+
+- name: "Brisbane Roar"
+  aliases: ["brisbane", "brisbane roar fc", "roar", "the roar", "brfc"]
+
+- name: "Central Coast Mariners"
+  aliases: ["central coast", "central coast mariners fc", "mariners", "ccm", "coasties"]
+
+- name: "Macarthur"
+  aliases: ["macarthur fc", "macarthur bulls", "the bulls", "bulls", "macarthur football club"]
+
+- name: "Melbourne City"
+  aliases: ["melbourne city fc", "mel city", "melb city", "city blues", "melbourne cityzens"]
+
+- name: "Melbourne Victory"
+  aliases: ["melbourne victory fc", "victory", "big v", "mvfc", "melb victory"]
+
+- name: "Perth Glory"
+  aliases: ["perth glory fc", "perth", "glory", "pgfc", "purple army"]
+
+- name: "Sydney"
+  aliases: ["sydney fc", "sydney football club", "sky blues", "harbour city club", "sfc"]
+
+- name: "Wellington Phoenix"
+  aliases: ["wellington", "wellington phoenix fc", "nix", "the nix", "wpfc"]
+
+# German Bundesliga
+- name: "Borussia Dortmund"
+  aliases: ["dortmund", "bvb", "bvb09", "borussia", "borussia dortmund fc", "die schwarzgelben"]
+
+- name: "Eintracht Frankfurt"
+  aliases: ["frankfurt", "eintracht", "eintracht frankfurt fc", "sge", "die adler"]
+
+# Spanish La Liga
+- name: "Alaves"
+  aliases: ["alaves", "deportivo alaves", "alaves cf", "babazorros"]
+
+- name: "Athletic Club"
+  aliases: ["athletic bilbao", "athletic club bilbao", "athletic", "los leones"]
+
+- name: "Atletico Madrid"
+  aliases: ["atletico madrid", "atl madrid", "atleti", "colchoneros"]
+
+- name: "Barcelona"
+  aliases: ["barcelona", "fc barcelona", "barca", "blaugrana"]
+
+- name: "Celta Vigo"
+  aliases: ["celta vigo", "rc celta", "celta", "os celestes"]
+
+- name: "Elche"
+  aliases: ["elche", "elche cf", "los franjiverdes"]
+
+- name: "Espanyol"
+  aliases: ["espanyol", "rcd espanyol", "periquitos", "los periquitos"]
+
+- name: "Getafe"
+  aliases: ["getafe", "getafe cf", "azulones"]
+
+- name: "Girona"
+  aliases: ["girona", "girona fc", "blanquivermells"]
+
+- name: "Levante"
+  aliases: ["levante", "levante ud", "granotas"]
+
+- name: "Mallorca"
+  aliases: ["mallorca", "rcd mallorca", "bermellones", "los bermellones"]
+
+- name: "Osasuna"
+  aliases: ["osasuna", "club atletico osasuna", "rojillos", "los rojillos"]
+
+- name: "Oviedo"
+  aliases: ["oviedo", "real oviedo", "carbayones", "los carbayones"]
+
+- name: "Rayo Vallecano"
+  aliases: ["rayo vallecano", "rayo", "franjirrojos", "los franjirrojos"]
+
+- name: "Real Betis"
+  aliases: ["real betis", "betis", "real betis balompie", "beticos", "los beticos"]
+
+- name: "Real Madrid"
+  aliases: ["real madrid", "rmcf", "los blancos", "los merengues"]
+
+- name: "Real Sociedad"
+  aliases: ["real sociedad", "la real", "txuri urdin"]
+
+- name: "Sevilla"
+  aliases: ["sevilla", "sevilla fc", "nervionenses"]
+
+- name: "Valencia"
+  aliases: ["valencia", "valencia cf", "los che", "che"]
+
+- name: "Villarreal"
+  aliases: ["villarreal", "villarreal cf", "yellow submarine", "submarino amarillo"]
+
+# Spanish Super Cup
+- name: "Athletic Club"
+  aliases: ["athletic bilbao", "athletic club bilbao", "athletic", "los leones"]
+
+- name: "Atletico Madrid"
+  aliases: ["atletico madrid", "atl madrid", "atleti", "colchoneros"]
+
+- name: "Barcelona"
+  aliases: ["barcelona", "fc barcelona", "barca", "blaugrana"]
+
+- name: "Real Madrid"
+  aliases: ["real madrid", "rmcf", "los blancos", "los merengues"]
+
+# French Ligue 1
+- name: "Angers"
+  aliases: ["angers", "angers sco", "angers sporting club", "sco angers", "sco"]
+
+- name: "Auxerre"
+  aliases: ["auxerre", "aj auxerre", "aja"]
+
+- name: "Le Havre"
+  aliases: ["le havre", "le havre ac", "hac", "les ciel et marine"]
+
+- name: "Lens"
+  aliases: ["lens", "rc lens", "sang et or"]
+
+- name: "Lille"
+  aliases: ["lille", "lille osc", "losc", "losc lille", "les dogues"]
+
+- name: "Lorient"
+  aliases: ["lorient", "fc lorient", "les merlus"]
+
+- name: "Lyon"
+  aliases: ["lyon", "ol", "olympique lyonnais", "les gones"]
+
+- name: "Marseille"
+  aliases: ["marseille", "om", "olympique de marseille", "les phoceens"]
+
+- name: "Metz"
+  aliases: ["metz", "fc metz", "les grenats"]
+
+- name: "Monaco"
+  aliases: ["monaco", "as monaco", "asm", "les rouges et blancs"]
+
+- name: "Nantes"
+  aliases: ["nantes", "fc nantes", "les canaris"]
+
+- name: "Nice"
+  aliases: ["nice", "ogc nice", "les aiglons"]
+
+- name: "Paris FC"
+  aliases: ["paris fc", "paris football club", "paris"]
+
+- name: "Paris Saint Germain"
+  aliases: ["paris saint germain", "psg", "paris sg", "paris st-germain", "les parisiens"]
+
+- name: "Rennes"
+  aliases: ["rennes", "stade rennais", "srfc", "les rouges et noirs"]
+
+- name: "Stade Brestois 29"
+  aliases: ["stade brestois", "stade brestois 29", "sb29", "brest"]
+
+- name: "Strasbourg"
+  aliases: ["strasbourg", "rc strasbourg", "racing strasbourg", "les alsaciens"]
+
+- name: "Toulouse"
+  aliases: ["toulouse", "toulouse fc", "tfc", "les violets"]
+
+# English FA Cup
+- name: "Fleetwood Town"
+  aliases: ["fleetwood", "fleetwood town fc", "cod army"]
+
+- name: "Milton Keynes Dons"
+  aliases: ["milton keynes dons", "mk dons", "milton keynes", "mkdons", "the dons"]
+
+- name: "Oxford United"
+  aliases: ["oxford united", "oxford utd", "oxford", "oufc", "the yellows"]
+
+- name: "Port Vale"
+  aliases: ["port vale", "port vale fc", "vale", "the valiants"]
+
+- name: "Preston"
+  aliases: ["preston", "preston north end", "pne", "lilywhites"]
+
+- name: "Wigan"
+  aliases: ["wigan", "wigan athletic", "latics"]
+
+- name: "Wrexham"
+  aliases: ["wrexham", "wrexham afc", "red dragons"]

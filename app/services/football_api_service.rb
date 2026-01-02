@@ -1,3 +1,5 @@
+require 'set'
+
 class FootballApiService
   include HTTParty
   base_uri 'https://v3.football.api-sports.io'
@@ -67,6 +69,7 @@ class FootballApiService
   end
 
   def sync_matches(rate_limit_delay: 0.2)
+    reset_missing_team_names!
     response = get_league_schedule
     errors = Array(response['errors']).compact
     return { success: false, error: errors } if errors.any?
@@ -101,6 +104,8 @@ class FootballApiService
       summary[:updated_events] += 1
       sleep(rate_limit_delay) if rate_limit_delay.to_f.positive?
     end
+
+    log_missing_team_tags_for_competition(league)
 
     summary
   end
@@ -190,11 +195,34 @@ class FootballApiService
   end
 
   def log_missing_team_tag(raw_name)
-    self.class.missing_tag_logger.warn("Team tag not identified for '#{raw_name}'")
+    return if raw_name.to_s.strip.blank?
+
+    missing_team_names << raw_name
   end
 
   def self.missing_tag_logger
     @missing_tag_logger ||= ::Logger.new(Rails.root.join('log', 'football_api_missing_tags.log'))
+  end
+
+  def log_missing_team_tags_for_competition(league)
+    return if missing_team_names.empty?
+
+    competition_name = league&.name || "Unknown Competition"
+    names = missing_team_names.to_a.sort
+
+    self.class.missing_tag_logger.warn(
+      "Competition '#{competition_name}' missing team tags: #{names.join(', ')}"
+    )
+
+    reset_missing_team_names!
+  end
+
+  def missing_team_names
+    @missing_team_names ||= Set.new
+  end
+
+  def reset_missing_team_names!
+    @missing_team_names = Set.new
   end
 
   def normalize_team_name(value)

@@ -41,7 +41,11 @@
                                   %span.fw-semibold= tag.name
                                   %small= sentiment_score_display(article_tag.sentiment_score)
                       .text-end.small.text-muted
-                        %div.fw-semibold= article.feed_source&.name || 'External source'
+                        - source = article.feed_source
+                        - if source
+                          = link_to source.name, feed_source_path(source), class: 'fw-semibold text-decoration-none'
+                        - else
+                          %div.fw-semibold External source
                         - if article_time.present?
                           %div= "#{time_ago_in_words(article_time)} ago"
                         - else
