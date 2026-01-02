@@ -8,9 +8,17 @@ class Competition < ApplicationRecord
 
   validates :betfair_id, presence: true, uniqueness: true
   validates :name, :country_code, presence: true
+  validates :position, uniqueness: { scope: :country_code }, allow_nil: true
 
   scope :for_country, ->(country_code) { where(country_code: country_code) if country_code.present? }
   scope :ordered_by_name, -> { order(Arel.sql("LOWER(name) ASC")) }
+  scope :ordered_by_position, lambda {
+    reorder(
+      Arel.sql("CASE WHEN position IS NULL THEN 1 ELSE 0 END"),
+      :position,
+      Arel.sql("LOWER(name) ASC")
+    )
+  }
 
   def self.ensure_synced_for_country!(country_code, max_age: REFRESH_INTERVAL)
     return none unless country_code.present?
