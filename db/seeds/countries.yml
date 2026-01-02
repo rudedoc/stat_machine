@@ -1,0 +1,57 @@
+# db/seeds/countries.yml
+
+- country_code: "GB"
+  name: "United Kingdom"
+  position: 1
+  betfair_name:
+  flag: "🇬🇧"
+  region: "Europe"
+  subregion: "Northern Europe"
+
+- country_code: "ES"
+  name: "Spain"
+  position: 2
+  betfair_name:
+  flag: "🇪🇸"
+  region: "Europe"
+  subregion: "Southern Europe"
+
+- country_code: "IT"
+  name: "Italy"
+  position: 3
+  betfair_name:
+  flag: "🇮🇹"
+  region: "Europe"
+  subregion: "Southern Europe"
+
+- country_code: "FR"
+  name: "France"
+  position: 4
+  betfair_name:
+  flag: "🇫🇷"
+  region: "Europe"
+  subregion: "Western Europe"
+
+- country_code: "DE"
+  name: "Germany"
+  position: 5
+  betfair_name:
+  flag: "🇩🇪"
+  region: "Europe"
+  subregion: "Western Europe"
+
+- country_code: "PT"
+  name: "Portugal"
+  position: 6
+  betfair_name:
+  flag: "🇵🇹"
+  region: "Europe"
+  subregion: "Southern Europe"
+
+- country_code: "AU"
+  name: "Australia"
+  position: 7
+  betfair_name:
+  flag: "🇦🇺"
+  region: "Oceania"
+  subregion: "Australia and New Zealand"

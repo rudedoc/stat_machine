@@ -2,24 +2,26 @@ class BetfairApi
   BASE_URL = "https://api.betfair.com/exchange/betting/rest/v1.0/"
   LOGIN_URL = "https://identitysso.betfair.com/api/login"
 
+  attr_reader :allowed_country_codes, :allowed_competition_ids
+
   def self.import_all_data!
     api = new
+    return if api.allowed_competition_ids.blank?
 
-    Country.sync_all!(api: api)
-
-    Country.find_each do |country|
-      # Consider adding .active scope here to skip old countries
-      Competition.sync_for_country!(country.country_code, api: api)
-    end
-
-    Competition.find_each do |competition|
-      api.fetch_match_odds_by_competition(competition.betfair_id)
+    api.allowed_competition_ids.each do |competition_id|
+      api.fetch_match_odds_by_competition(competition_id)
     end
   end
 
   def initialize
     @app_key = Rails.application.credentials.dig(:betfair, :app_key)
     @session_token = get_session_token
+    @allowed_country_codes = Country.pluck(:country_code)
+    @allowed_competition_ids = Competition
+      .where(country_code: allowed_country_codes)
+      .where.not(betfair_id: nil)
+      .pluck(:betfair_id)
+      .map(&:to_s)
   end
 
   def list_countries
@@ -36,10 +38,15 @@ class BetfairApi
   end
 
   def list_competitions(country_codes = [])
+    filtered_codes = Array(country_codes)
+    filtered_codes = allowed_country_codes if filtered_codes.empty?
+    filtered_codes &= allowed_country_codes if allowed_country_codes.any?
+    return [] if filtered_codes.empty?
+
     payload = {
       filter: {
         eventTypeIds: ["1"],
-        marketCountries: Array(country_codes),
+        marketCountries: filtered_codes,
         marketStartTime: {
           from: Time.now.utc.strftime("%Y-%m-%dT%H:%M:%SZ"),
           to: 1.week.from_now.end_of_day.strftime("%Y-%m-%dT%H:%M:%SZ")
@@ -50,15 +57,18 @@ class BetfairApi
   end
 
   def fetch_match_odds_by_competition(competition_id, persist: true)
+    betfair_competition_id = competition_id.to_s
+    return [] unless allowed_competition_ids.include?(betfair_competition_id)
+
     payload = {
       filter: {
         eventTypeIds: ["1"],
-        competitionIds: [competition_id],
+        competitionIds: [betfair_competition_id],
         marketStartTime: { from: Time.now.utc.strftime("%Y-%m-%dT%H:%M:%SZ") }
       }
     }
     events = post_request("listEvents/", payload)
-    fetch_match_odds_for_events(events, competition_id, persist: persist)
+    fetch_match_odds_for_events(events, betfair_competition_id, persist: persist)
   end
 
   # Main method to fetch Matches + Odds + Volume
@@ -72,7 +82,6 @@ class BetfairApi
       catalogues = list_match_odds_markets(events_chunk)
       next if catalogues.empty?
 
-      # ... (metadata mapping logic remains the same) ...
       market_metadata = catalogues.each_with_object({}) do |cat, hash|
         hash[cat["marketId"]] = {
           event_name: cat.dig("event", "name"),
@@ -82,7 +91,7 @@ class BetfairApi
           runners: cat["runners"].each_with_object({}) { |r, h| h[r["selectionId"]] = r["runnerName"] }
         }
       end
-      
+
       market_ids = market_metadata.keys
       market_books = []
       market_ids.each_slice(25) { |chunk| market_books += get_market_prices_batch(chunk) }

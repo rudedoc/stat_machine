@@ -29,6 +29,9 @@ class BetfairSnapshotPersister
   def persist_match(match)
     return if match[:betfair_event_id].blank?
 
+    competition = seeded_competitions_by_id[match[:betfair_competition_id].to_s]
+    return unless competition
+
     event = Event.find_or_initialize_by(betfair_event_id: match[:betfair_event_id])
     
     # Merge Event Level Liquidity
@@ -36,12 +39,12 @@ class BetfairSnapshotPersister
       total_matched: match[:total_matched],
       total_available: match[:total_available],
       last_synced_at: captured_at,
-      betfair_competition_id: match[:betfair_competition_id]
+      betfair_competition_id: competition.betfair_id
     })
 
     event.assign_attributes(
       name: match[:event_name],
-      betfair_competition_id: match[:betfair_competition_id],
+      betfair_competition_id: competition.betfair_id,
       kick_off: parse_time(match[:kick_off]),
       exchange_data: updated_exchange_data
     )
@@ -119,5 +122,17 @@ class BetfairSnapshotPersister
     Time.zone ? Time.zone.parse(value.to_s) : Time.parse(value.to_s)
   rescue ArgumentError, TypeError
     nil
+  end
+
+  def seeded_competitions_by_id
+    @seeded_competitions_by_id ||= begin
+      ids = matches.map { |match| match[:betfair_competition_id].to_s }.reject(&:blank?).uniq
+      return {} if ids.empty?
+
+      Competition
+        .joins(:country)
+        .where(competitions: { betfair_id: ids })
+        .index_by { |competition| competition.betfair_id.to_s }
+    end
   end
 end

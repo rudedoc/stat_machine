@@ -1,0 +1,191 @@
+# db/seeds/competitions.yml
+
+# Australia (AU)
+- name: "Australian A-League Men"
+  api_football_country: "Australia"
+  api_football_name: "A-League"
+  football_api_league_id: 188
+  betfair_id: "12117172"
+  competition_region: "AUS"
+  country_code: "AU"
+  position: 1
+
+# Germany (DE)
+- name: "German Bundesliga"
+  api_football_country: "Germany"
+  api_football_name: "Bundesliga"
+  football_api_league_id: 78
+  betfair_id: "59"
+  competition_region: "DEU"
+  country_code: "DE"
+  position: 1
+
+# Spain (ES)
+- name: "Spanish La Liga"
+  api_football_country: "Spain"
+  api_football_name: "La Liga"
+  football_api_league_id: 140
+  betfair_id: "117"
+  competition_region: "ESP"
+  country_code: "ES"
+  position: 1
+
+- name: "Spanish Super Cup"
+  api_football_country: "Spain"
+  api_football_name: "Super Cup"
+  football_api_league_id: 556
+  betfair_id: "12209520"
+  competition_region: "ESP"
+  country_code: "ES"
+  position: 2
+
+# France (FR)
+- name: "French Ligue 1"
+  api_football_country: "France"
+  api_football_name: "Ligue 1"
+  football_api_league_id: 61
+  betfair_id: "55"
+  competition_region: "FRA"
+  country_code: "FR"
+  position: 1
+
+# Great Britain (GB)
+## England
+- name: "English Premier League"
+  api_football_country: "England"
+  api_football_name: "Premier League"
+  football_api_league_id: 39
+  betfair_id: "10932509"
+  competition_region: "GBR"
+  country_code: "GB"
+  position: 1
+
+- name: "English FA Cup"
+  api_football_country: "England"
+  api_football_name: "FA Cup"
+  football_api_league_id: 45
+  betfair_id: "30558"
+  competition_region: "GBR"
+  country_code: "GB"
+  position: 2
+
+- name: "English Sky Bet Championship"
+  api_football_country: "England"
+  api_football_name: "Championship"
+  football_api_league_id: 40
+  betfair_id: "7129730"
+  competition_region: "GBR"
+  country_code: "GB"
+  position: 3
+
+- name: "English Sky Bet League 1"
+  api_football_country: "England"
+  api_football_name: "League One"
+  football_api_league_id: 41
+  betfair_id: "35"
+  competition_region: "GBR"
+  country_code: "GB"
+  position: 4
+
+- name: "English National League"
+  api_football_country: "England"
+  api_football_name: "National League"
+  football_api_league_id: 43
+  betfair_id: "11086347"
+  competition_region: "GBR"
+  country_code: "GB"
+  position: 5
+
+- name: "English National League North"
+  api_football_country: "England"
+  api_football_name: "National League - North"
+  football_api_league_id: 50
+  betfair_id: "41"
+  competition_region: "GBR"
+  country_code: "GB"
+  position: 6
+
+- name: "English National League South"
+  api_football_country: "England"
+  api_football_name: "National League - South"
+  football_api_league_id: 51
+  betfair_id: "43"
+  competition_region: "GBR"
+  country_code: "GB"
+  position: 7
+
+- name: "English Isthmian Premier League"
+  api_football_country: "England"
+  api_football_name: "Non League Premier - Isthmian"
+  football_api_league_id: 58
+  betfair_id: "12199687"
+  competition_region: "GBR"
+  country_code: "GB"
+  position: 8
+
+## Scotland
+- name: "Scottish Premiership"
+  api_football_country: "Scotland"
+  api_football_name: "Premiership"
+  football_api_league_id: 179
+  betfair_id: "105"
+  competition_region: "GBR"
+  country_code: "GB"
+  position: 9
+
+- name: "Scottish Championship"
+  api_football_country: "Scotland"
+  api_football_name: "Championship"
+  football_api_league_id: 180
+  betfair_id: "107"
+  competition_region: "GBR"
+  country_code: "GB"
+  position: 10
+
+- name: "Scottish League One"
+  api_football_country: "Scotland"
+  api_football_name: "League One"
+  football_api_league_id: 183
+  betfair_id: "109"
+  competition_region: "GBR"
+  country_code: "GB"
+  position: 11
+
+## Wales
+- name: "Welsh Premiership"
+  api_football_country: "Wales"
+  api_football_name: "Premier League"
+  football_api_league_id: 110
+  betfair_id: "252549"
+  competition_region: "GBR"
+  country_code: "GB"
+  position: 12
+
+# Italy (IT)
+- name: "Italian Serie A"
+  api_football_country: "Italy"
+  api_football_name: "Serie A"
+  football_api_league_id: 135
+  betfair_id: "81"
+  competition_region: "ITA"
+  country_code: "IT"
+  position: 1
+
+# Portugal (PT)
+- name: "Portuguese Primeira Liga"
+  api_football_country: "Portugal"
+  api_football_name: "Primeira Liga"
+  football_api_league_id: 94
+  betfair_id: "99"
+  competition_region: "PRT"
+  country_code: "PT"
+  position: 1
+
+- name: "Portuguese League Cup"
+  api_football_country: "Portugal"
+  api_football_name: "Taça da Liga"
+  football_api_league_id: 97
+  betfair_id: "12266107"
+  competition_region: "PRT"
+  country_code: "PT"
+  position: 2

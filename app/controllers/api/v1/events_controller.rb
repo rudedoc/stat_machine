@@ -3,7 +3,6 @@ class Api::V1::EventsController < Api::V1::BaseController
   before_action :authenticate_firebase_user, only: :predictions
   before_action :set_country
   before_action :set_competition
-  before_action :ensure_events!, only: :index
   before_action :set_event, only: [:show, :predictions]
 
   def index
@@ -47,18 +46,8 @@ class Api::V1::EventsController < Api::V1::BaseController
     @competition = @country.competitions.find_by!(betfair_id: params[:competition_id])
   end
 
-  def ensure_events!
-    return if event_scope.exists?
-
-    BetfairSnapshotPersister.persist_for_competition!(@competition.betfair_id)
-  end
-
   def set_event
     @event = event_scope.find_by(betfair_event_id: params[:id])
-    return if @event.present?
-
-    BetfairSnapshotPersister.persist_for_competition!(@competition.betfair_id)
-    @event = event_scope.find_by!(betfair_event_id: params[:id])
   end
 
   def event_scope

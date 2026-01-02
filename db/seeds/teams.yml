@@ -1,0 +1,91 @@
+- name: "Arsenal"
+  betfair_names: []
+  aliases: ["gunners", "gooners", "ars", "afc"]
+
+- name: "Aston Villa"
+  betfair_names: []
+  aliases: ["villa", "avfc", "villans", "claret and blue"]
+
+- name: "Bournemouth"
+  betfair_names: ["afc bournemouth"]
+  aliases: ["cherries", "afcb", "boscombe"]
+
+- name: "Brentford"
+  betfair_names: []
+  aliases: ["bees", "brentford fc"]
+
+- name: "Brighton & Hove Albion"
+  betfair_names: ["brighton", "brighton and hove albion"]
+  aliases: ["seagulls", "bha", "bhafc", "albion"]
+
+- name: "Burnley"
+  betfair_names: []
+  aliases: ["clarets", "bfc", "turf moor"]
+
+- name: "Chelsea"
+  betfair_names: []
+  aliases: ["blues", "cfc", "chelsea fc", "che", "pensioners"]
+
+- name: "Crystal Palace"
+  betfair_names: []
+  aliases: ["palace", "cpfc", "eagles", "selhurst"]
+
+- name: "Everton"
+  betfair_names: []
+  aliases: ["toffees", "efc", "blues", "school of science"]
+
+- name: "Fulham"
+  betfair_names: []
+  aliases: ["cottagers", "ffc", "whites"]
+
+- name: "Leeds United"
+  betfair_names: ["leeds", "leeds utd"]
+  aliases: ["lufc", "whites", "peacocks", "elland road"]
+
+- name: "Leicester City"
+  betfair_names: ["leicester"]
+  aliases: ["foxes", "lcfc", "lei"]
+
+- name: "Liverpool"
+  betfair_names: []
+  aliases: ["reds", "lfc", "kop", "pool", "liv"]
+
+- name: "Manchester City"
+  betfair_names: ["man city"]
+  aliases: ["city", "mcfc", "citizens", "sky blues", "pep"]
+
+- name: "Manchester United"
+  betfair_names: ["man utd", "man u", "man united"]
+  aliases: ["united", "mufc", "red devils", "ten hag"]
+
+- name: "Newcastle United"
+  betfair_names: ["newcastle"]
+  aliases: ["nufc", "magpies", "toon", "geordies", "new"]
+
+- name: "Nottingham Forest"
+  betfair_names: ["nottm forest"]
+  aliases: ["forest", "nffc", "tricky trees", "reds"]
+
+- name: "Sheffield United"
+  betfair_names: ["sheff utd"]
+  aliases: ["blades", "sufc"]
+
+- name: "Southampton"
+  betfair_names: []
+  aliases: ["saints", "sfc"]
+
+- name: "Sunderland"
+  betfair_names: []
+  aliases: ["black cats", "safc", "mackems"]
+
+- name: "Tottenham Hotspur"
+  betfair_names: ["tottenham", "spurs"]
+  aliases: ["thfc", "lilywhites", "tot"]
+
+- name: "West Ham United"
+  betfair_names: ["west ham"]
+  aliases: ["hammers", "whufc", "irons", "whu"]
+
+- name: "Wolverhampton Wanderers"
+  betfair_names: ["wolves", "wolverhampton"]
+  aliases: ["wwfc", "wanderers"]
