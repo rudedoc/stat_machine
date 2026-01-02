@@ -97,9 +97,9 @@ end
 puts "\nDone! #{Tag.teams.count} teams seeded."
 
 
-# BetfairApi.import_all_data!
+BetfairApi.import_all_data!
 
-# puts "Synchronizing matches from Football API..."
+puts "Synchronizing matches from Football API..."
 
 # FootballApiService.new.sync_matches
 
