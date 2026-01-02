@@ -1,14 +1,40 @@
 class FootballApiService
   include HTTParty
   base_uri 'https://v3.football.api-sports.io'
-  ENGLISH_PREMIER_LEAGUE_ID = 39
 
-  def initialize(league_name: 'English Premier League', league_id: ENGLISH_PREMIER_LEAGUE_ID, season: 2025, from_date: Date.today, to_date: Date.today + 7)
-    @league_name = league_name
+  DEFAULT_LOOKAHEAD_DAYS = 7
+
+  def self.sync_upcoming_competitions!(from_date: Date.current, to_date: Date.current + 7.days, season: 2025, rate_limit_delay: 0.2)
+    start_date = normalize_date_boundary(from_date) || Date.current
+    finish_date = normalize_date_boundary(to_date) || (start_date + DEFAULT_LOOKAHEAD_DAYS)
+
+    Competition
+      .where.not(football_api_league_id: nil)
+      .find_each
+      .with_object([]) do |competition, summaries|
+        service = new(
+          league_id: competition.football_api_league_id,
+          season: season,
+          from_date: start_date,
+          to_date: finish_date
+        )
+
+        summary = service.sync_matches(rate_limit_delay: rate_limit_delay)
+
+        summaries << {
+          competition_id: competition.id,
+          betfair_competition_id: competition.betfair_id,
+          football_api_league_id: competition.football_api_league_id,
+          summary: summary
+        }
+      end
+  end
+
+  def initialize(league_id:, season: nil, from_date: nil, to_date: nil)
     @league_id = league_id
-    @season = season
-    @from_date = from_date
-    @to_date = to_date
+    @season = season || default_season
+    @from_date = normalize_date(from_date) || Date.current
+    @to_date = normalize_date(to_date) || (@from_date + DEFAULT_LOOKAHEAD_DAYS)
     @options = {
       headers: {
         'x-apisports-key' => Rails.application.credentials.dig(:api_football, :api_key),
@@ -45,8 +71,8 @@ class FootballApiService
     errors = Array(response['errors']).compact
     return { success: false, error: errors } if errors.any?
 
-    league = Competition.find_by(name: @league_name)
-    return { success: false, error: "Competition '#{@league_name}' not found" } unless league
+    league = Competition.find_by(football_api_league_id: @league_id)
+    return { success: false, error: "Competition with ID '#{@league_id}' not found" } unless league
 
     matches = response['response'] || []
     summary = {
@@ -80,6 +106,29 @@ class FootballApiService
   end
 
   private
+
+  def default_season
+    Date.current.year
+  end
+
+  def normalize_date(value)
+    return value if value.is_a?(Date)
+    return value.to_date if value.respond_to?(:to_date)
+
+    Date.parse(value.to_s)
+  rescue ArgumentError, TypeError
+    nil
+  end
+
+  def self.normalize_date_boundary(value)
+    return nil if value.nil?
+    return value if value.is_a?(Date)
+    return value.to_date if value.respond_to?(:to_date)
+
+    Date.parse(value.to_s)
+  rescue ArgumentError, TypeError
+    nil
+  end
 
   def find_event_for_match(league, match_data)
     fixture = match_data['fixture']
