@@ -37,10 +37,7 @@
               - if latest_sync
                 %span.text-white-50= " · #{time_ago_in_words(latest_sync)} ago"
             %p.text-white-50.mb-3
-              Every refresh pulls Betfair country data, normalizes ISO metadata, and links the latest competitions for fast drill downs.
-            %div.d-flex.flex-wrap.gap-2
-              = link_to "Sync countries", countries_path, class: "btn btn-light fw-semibold"
-              = link_to "Edge tracker", root_path(anchor: 'prediction-lab'), class: "btn btn-outline-light"
+              Every refresh pulls Betfair country data and links the latest competitions for fast drill downs.
 
     %section.page-section.pt-0
       - if @countries.present?
