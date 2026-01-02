@@ -23,35 +23,78 @@
                 %br/
                 = metric[:caption]
       .col-lg-6
+        - next_up = next_up_card_state(@next_up_event)
         .hero-card.shadow-strong.bg-dark.bg-opacity-50.p-4.rounded-4
           %div.d-flex.justify-content-between.align-items-center.mb-3
             %span.fw-semibold.text-uppercase.small.text-white-50 Next Up
-            %span.badge.bg-success.text-uppercase.fw-semibold Live edge
-          %h3.fw-bold.mb-1.text-white Premier AI Parlay Builder
-          %p.text-white-50.mb-4 3-leg slip surfaced from 15,302 live markets
-          .stacked-card.mb-3.p-3
-            %div.d-flex.justify-content-between.align-items-center.mb-3
-              %div
-                %p.text-white-50.mb-0 Premier League
-                %p.text-white.h5.mb-0 Arsenal vs. Chelsea
-              %div.text-end
-                %p.text-white-50.mb-0 Kickoff
-                %p.text-white.fw-semibold.mb-0 21:00 GMT
-            .progress.progress-thick.mb-3
-              .progress-bar.bg-gradient{ style: "width: 78%" }
-            .d-flex.justify-content-between
-              %span.text-white-50 Edge Confidence
-              %span.text-white.fw-semibold 93%
-          .d-flex.gap-3.flex-wrap
-            .signal-chip
-              %strong+11.4%
-              %span text vs. market
-            .signal-chip
-              %strong 0:18
-              %span reaction window
-            .signal-chip
-              %strong 27
-              %span sports synced
+            - if next_up[:present?]
+              %span.badge{ class: next_up[:status_badge_class] }= next_up[:status_badge_label]
+            - else
+              %span.badge.bg-success.text-uppercase.fw-semibold Live edge
+          - if next_up[:present?]
+            %h3.fw-bold.mb-1.text-white= next_up[:matchup_label]
+            %p.text-white-50.mb-4= next_up[:context_line]
+            .stacked-card.mb-3.p-3
+              - if next_up[:home_logo].present? || next_up[:away_logo].present?
+                .d-flex.justify-content-between.align-items-center.mb-3
+                  .d-flex.align-items-center.gap-2
+                    - if next_up[:home_logo].present?
+                      %img.rounded-circle{ src: next_up[:home_logo], width: 48, height: 48, alt: "#{next_up[:home_name]} badge" }
+                    %div
+                      %p.text-white-50.mb-0 Home
+                      %p.text-white.h5.mb-0= next_up[:home_name]
+                  %span.vs-pill VS
+                  .d-flex.align-items-center.gap-2.text-end
+                    %div
+                      %p.text-white-50.mb-0 Away
+                      %p.text-white.h5.mb-0= next_up[:away_name]
+                    - if next_up[:away_logo].present?
+                      %img.rounded-circle{ src: next_up[:away_logo], width: 48, height: 48, alt: "#{next_up[:away_name]} badge" }
+              %div.d-flex.justify-content-between.align-items-center.mb-3
+                %div
+                  %p.text-white-50.mb-0= next_up[:competition_name]
+                  %p.text-white.h5.mb-0= next_up[:matchup_label]
+                %div.text-end
+                  %p.text-white-50.mb-0 Kickoff
+                  %p.text-white.fw-semibold.mb-0= next_up[:kickoff_label]
+                  - if next_up[:kickoff_countdown_label].present?
+                    %p.text-white-50.small.mb-0= next_up[:kickoff_countdown_label]
+              .progress.progress-thick.mb-3
+                .progress-bar.bg-gradient{ style: "width: #{next_up[:edge_confidence_value] || 0}%" }
+              .d-flex.justify-content-between
+                %span.text-white-50 Edge Confidence
+                %span.text-white.fw-semibold= next_up[:edge_confidence_display]
+            .d-flex.gap-3.flex-wrap
+              - next_up[:probability_chips].each do |chip|
+                .signal-chip
+                  %strong= chip[:value]
+                  %span= chip[:label]
+          - else
+            %h3.fw-bold.mb-1.text-white Premier AI Parlay Builder
+            %p.text-white-50.mb-4 3-leg slip surfaced from 15,302 live markets
+            .stacked-card.mb-3.p-3
+              %div.d-flex.justify-content-between.align-items-center.mb-3
+                %div
+                  %p.text-white-50.mb-0 Premier League
+                  %p.text-white.h5.mb-0 Arsenal vs. Chelsea
+                %div.text-end
+                  %p.text-white-50.mb-0 Kickoff
+                  %p.text-white.fw-semibold.mb-0 21:00 GMT
+              .progress.progress-thick.mb-3
+                .progress-bar.bg-gradient{ style: "width: 78%" }
+              .d-flex.justify-content-between
+                %span.text-white-50 Edge Confidence
+                %span.text-white.fw-semibold 93%
+            .d-flex.gap-3.flex-wrap
+              .signal-chip
+                %strong+11.4%
+                %span text vs. market
+              .signal-chip
+                %strong 0:18
+                %span reaction window
+              .signal-chip
+                %strong 27
+                %span sports synced
 
 %section.trust-band.py-4.bg-dark.text-white
   .container

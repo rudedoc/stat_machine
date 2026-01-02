@@ -70,6 +70,8 @@ class PagesController < ApplicationController
       { label: 'Beat The Closing Line', detail: 'Average CLV swing of +18 cents per wager.' },
       { label: 'Personalized Cards', detail: 'Sync sportsbooks to tailor the slip to you.' }
     ]
+
+    @next_up_event = load_next_up_event
   end
 
   def profile
@@ -81,5 +83,13 @@ class PagesController < ApplicationController
         subheading: 'Authenticate with Firebase to sync tickets and personalized insights.'
       }
     }
+  end
+
+  private
+
+  def load_next_up_event
+    Country
+      .includes(competitions: { events: [:competition, { markets: { competitors: :prices } }] })
+      .first&.competitions&.first&.events&.first
   end
 end
