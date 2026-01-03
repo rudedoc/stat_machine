@@ -1,0 +1,37 @@
+- related_articles = Array(local_assigns[:related_articles])
+
+.surface-card.h-100
+  %span.eyebrow.text-primary.mb-2 Related Coverage
+  %h3.h5.fw-bold.mb-2 Stories mentioning this event's tags
+  %p.text-muted.small.mb-3 Latest articles pulled from connected feeds that match this fixture's tags.
+  - if related_articles.any?
+    .list-group.list-group-flush
+      - related_articles.each do |article|
+        - article_time = article.published_at || article.created_at
+        %a.list-group-item.list-group-item-action.d-flex.justify-content-between.align-items-start.gap-3{ href: article.url, target: '_blank', rel: 'noopener' }
+          .flex-grow-1
+            %p.fw-semibold.mb-1= article.title
+            - if article.content.present?
+              %p.text-muted.small.mb-0= truncate(strip_tags(article.content), length: 140)
+            - if article.article_tags.any?
+              .article-tag-sentiments.mt-2
+                .d-flex.flex-wrap.gap-2
+                  - article.article_tags.each do |article_tag|
+                    - tag = article_tag.tag
+                    - next unless tag
+                    - badge_class = sentiment_indicator_badge_class(article_tag.sentiment)
+                    %span.badge.rounded-pill.d-inline-flex.align-items-center.gap-2{ class: badge_class }
+                      %span.fw-semibold= tag.name
+                      %small= sentiment_score_display(article_tag.sentiment_score)
+          .text-end.small.text-muted
+            - source = article.feed_source
+            - if source
+              = link_to source.name, feed_source_path(source), class: 'fw-semibold text-decoration-none'
+            - else
+              %div.fw-semibold External source
+            - if article_time.present?
+              %div= "#{time_ago_in_words(article_time)} ago"
+            - else
+              %div Date unavailable
+  - else
+    %p.text-muted.mb-0 No connected coverage has mentioned these tags yet.

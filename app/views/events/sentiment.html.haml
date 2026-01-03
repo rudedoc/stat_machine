@@ -30,7 +30,7 @@
     .row.align-items-center.mb-4.g-3
       .col-xl-8
         %span.eyebrow.text-primary Sentiment Intelligence
-        %h1.display-6.fw-bold.mb-2= "#{@event.name} coverage pulse"
+        %h1.display-6.fw-bold.mb-2.text-white= "#{@event.name} coverage pulse"
         %p.text-muted.mb-0
           Dive deeper into the articles and entity tags fueling the Event Sentiment score.
       .col-xl-4.text-xl-end
@@ -70,5 +70,5 @@
       event_tags: event_tags,
       tag_sentiments: tag_sentiments,
       related_articles: related_articles,
-      show_coverage: true
-
+      show_coverage: true,
+      stack_layout: true

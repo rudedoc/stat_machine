@@ -1,0 +1,18 @@
+- event_tags = Array(local_assigns[:event_tags])
+- tag_sentiments = local_assigns[:tag_sentiments] || {}
+- details_path = local_assigns[:details_path]
+
+.surface-card.h-100
+  %div.d-flex.justify-content-between.align-items-start
+    %div
+      %span.eyebrow.text-primary.mb-2 Event Sentiment
+      %h3.h5.fw-bold.mb-2 Media tone for related tags
+    - if details_path.present?
+      = link_to raw('View detail &rarr;'), details_path, class: 'btn btn-sm btn-link text-decoration-none text-primary fw-semibold'
+  %p.text-muted.small.mb-3 Averaged from per-entity article tagging pulled by the EntityExtractor.
+  - if event_tags.any?
+    .d-flex.flex-column.gap-3
+      - event_tags.each do |tag|
+        = render 'events/tag_sentiment', tag: tag, sentiment_snapshot: tag_sentiments[tag.id]
+  - else
+    %p.text-muted.mb-0 No tags linked to this event yet.

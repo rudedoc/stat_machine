@@ -3,62 +3,26 @@
 - related_articles = Array(local_assigns[:related_articles])
 - show_coverage = local_assigns.fetch(:show_coverage, related_articles.any?)
 - details_path = local_assigns[:details_path]
+- stack_layout = local_assigns.fetch(:stack_layout, false)
 - show_sentiment = event_tags.any?
 - show_section = show_sentiment || show_coverage
 
 - if show_section
   %section.page-section.pt-0
-    .row.mb-4.g-4
+    - if stack_layout
       - if show_sentiment
-        .col-12{ class: show_coverage ? 'col-xl-6' : 'col-xl-12' }
-          .surface-card.h-100
-            %div.d-flex.justify-content-between.align-items-start
-              %div
-                %span.eyebrow.text-primary.mb-2 Event Sentiment
-                %h3.h5.fw-bold.mb-2 Media tone for related tags
-              - if details_path.present?
-                = link_to raw('View detail &rarr;'), details_path, class: 'btn btn-sm btn-link text-decoration-none text-primary fw-semibold'
-            %p.text-muted.small.mb-3 Averaged from per-entity article tagging pulled by the EntityExtractor.
-            - if event_tags.any?
-              .d-flex.flex-column.gap-3
-                - event_tags.each do |tag|
-                  = render 'events/tag_sentiment', tag: tag, sentiment_snapshot: tag_sentiments[tag.id]
-            - else
-              %p.text-muted.mb-0 No tags linked to this event yet.
+        .row.mb-4
+          .col-12
+            = render 'events/sentiment_card', event_tags: event_tags, tag_sentiments: tag_sentiments, details_path: details_path
       - if show_coverage
-        .col-12{ class: show_sentiment ? 'col-xl-6' : 'col-xl-12' }
-          .surface-card.h-100
-            %span.eyebrow.text-primary.mb-2 Related Coverage
-            %h3.h5.fw-bold.mb-2 Stories mentioning this event's tags
-            %p.text-muted.small.mb-3 Latest articles pulled from connected feeds that match this fixture's tags.
-            - if related_articles.any?
-              .list-group.list-group-flush
-                - related_articles.each do |article|
-                  - article_time = article.published_at || article.created_at
-                  %a.list-group-item.list-group-item-action.d-flex.justify-content-between.align-items-start.gap-3{ href: article.url, target: '_blank', rel: 'noopener' }
-                    .flex-grow-1
-                      %p.fw-semibold.mb-1= article.title
-                      - if article.content.present?
-                        %p.text-muted.small.mb-0= truncate(strip_tags(article.content), length: 140)
-                      - if article.article_tags.any?
-                        .article-tag-sentiments.mt-2
-                          .d-flex.flex-wrap.gap-2
-                            - article.article_tags.each do |article_tag|
-                              - tag = article_tag.tag
-                              - next unless tag
-                              - badge_class = sentiment_indicator_badge_class(article_tag.sentiment)
-                              %span.badge.rounded-pill.d-inline-flex.align-items-center.gap-2{ class: badge_class }
-                                %span.fw-semibold= tag.name
-                                %small= sentiment_score_display(article_tag.sentiment_score)
-                    .text-end.small.text-muted
-                      - source = article.feed_source
-                      - if source
-                        = link_to source.name, feed_source_path(source), class: 'fw-semibold text-decoration-none'
-                      - else
-                        %div.fw-semibold External source
-                      - if article_time.present?
-                        %div= "#{time_ago_in_words(article_time)} ago"
-                      - else
-                        %div Date unavailable
-            - else
-              %p.text-muted.mb-0 No connected coverage has mentioned these tags yet.
+        .row.mb-0
+          .col-12
+            = render 'events/coverage_card', related_articles: related_articles
+    - else
+      .row.mb-4.g-4
+        - if show_sentiment
+          .col-12{ class: show_coverage ? 'col-xl-6' : 'col-xl-12' }
+            = render 'events/sentiment_card', event_tags: event_tags, tag_sentiments: tag_sentiments, details_path: details_path
+        - if show_coverage
+          .col-12{ class: show_sentiment ? 'col-xl-6' : 'col-xl-12' }
+            = render 'events/coverage_card', related_articles: related_articles
