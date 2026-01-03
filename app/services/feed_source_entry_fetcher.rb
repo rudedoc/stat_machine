@@ -58,15 +58,15 @@ class FeedSourceEntryFetcher
 
   def build_entry(item)
     Entry.new(
-      title: safe_string(item.title),
+      title: sanitize_title(item.title),
       url: extract_url(item),
       published_at: extract_published_at(item),
       text: extract_text(item)
     )
   end
 
-  def safe_string(value)
-    value.to_s.strip.presence
+  def sanitize_title(value)
+    PlainTextSanitizer.call(value)
   end
 
   def extract_url(item)

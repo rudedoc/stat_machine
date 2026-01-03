@@ -29,20 +29,36 @@ class FeedImporter
   private
 
   def find_or_create_article(entry)
+    sanitized_title = sanitize_title(entry.title)
+
     article = Article.find_or_create_by(url: entry.url) do |a|
       a.feed_source   = @feed_source
-      a.title         = entry.title
+      a.title         = sanitized_title
       a.published_at  = entry.published_at || Time.current
       a.content       = entry.text
     end
 
     # If the record was created in this call, Rails will have an id change
     created = article.previous_changes.key?("id")
+    ensure_plain_text_title(article, sanitized_title) unless created
     [ article, created ]
   rescue ActiveRecord::RecordNotUnique
     # If a race condition occurred, fetch the existing record and mark as not created
     existing = Article.find_by(url: entry.url)
     [ existing, false ]
+  end
+
+  def sanitize_title(title)
+    PlainTextSanitizer.call(title)
+  end
+
+  def ensure_plain_text_title(article, sanitized_title)
+    return if sanitized_title.blank?
+    return if article.title == sanitized_title
+
+    article.update!(title: sanitized_title)
+  rescue ActiveRecord::RecordInvalid => e
+    Rails.logger.warn("FeedImporter: unable to sanitize title for article #{article.id} - #{e.message}")
   end
 
   def extract_and_tag(article)

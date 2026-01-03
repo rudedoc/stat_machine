@@ -9,7 +9,7 @@ class FeedEntryProcessor
     # 1. Save the raw article first (Idempotency)
     article = Article.find_or_initialize_by(url: @entry.url)
     article.update!(
-      title: @entry.title,
+      title: sanitize_title(@entry.title),
       content: @entry.text,
       published_at: @entry.published_at,
       feed_source: @feed_source
@@ -97,5 +97,9 @@ class FeedEntryProcessor
 
   def default_sentiment_attributes
     { sentiment: "neutral", sentiment_score: 0.0 }
+  end
+
+  def sanitize_title(title)
+    PlainTextSanitizer.call(title)
   end
 end
