@@ -1,0 +1,74 @@
+- content_for :title, "#{@event.name} — Sentiment Intelligence"
+
+- event_tags = @event.tags
+- kickoff = @event.kick_off&.in_time_zone || @event.kick_off
+- home_logo = @event.home_team_logo
+- away_logo = @event.away_team_logo
+- home_pred = @event.predicted_home_team || {}
+- away_pred = @event.predicted_away_team || {}
+- home_name = @event.home_team_name || home_pred['name']
+- away_name = @event.away_team_name || away_pred['name']
+- event_overview_path = (@country && @competition) ? country_competition_event_path(@country, @competition, @event) : nil
+- breadcrumb_items = [{ label: 'Countries', path: countries_path }]
+- if @country
+  - breadcrumb_items << { label: @country.name, path: country_competitions_path(@country) }
+- if @competition
+  - comp_path = @country ? country_competition_events_path(@country, @competition) : nil
+  - breadcrumb_items << { label: @competition.name, path: comp_path }
+- if event_overview_path.present?
+  - breadcrumb_items << { label: @event.name, path: event_overview_path }
+- else
+  - breadcrumb_items << { label: @event.name }
+- breadcrumb_items << { label: 'Sentiment Intelligence' }
+- tag_sentiments = @tag_sentiments || {}
+- related_articles = Array(@related_articles)
+
+.page-shell.pb-5
+  .container
+    = render 'shared/breadcrumbs', items: breadcrumb_items
+
+    .row.align-items-center.mb-4.g-3
+      .col-xl-8
+        %span.eyebrow.text-primary Sentiment Intelligence
+        %h1.display-6.fw-bold.mb-2= "#{@event.name} coverage pulse"
+        %p.text-muted.mb-0
+          Dive deeper into the articles and entity tags fueling the Event Sentiment score.
+      .col-xl-4.text-xl-end
+        - if event_overview_path.present?
+          = link_to 'Back to event overview', event_overview_path, class: 'btn btn-outline-primary'
+
+    .surface-card.mb-4
+      .row.align-items-center.g-4
+        .col-md-6
+          %span.eyebrow.text-uppercase.text-muted.mb-2 Fixture Snapshot
+          %h2.h4.fw-bold.mb-1= @event.name
+          %p.text-muted.small.mb-3
+            %strong Kickoff:
+            = kickoff ? kickoff.strftime('%a %d %b · %H:%M %Z') : 'TBD'
+          %p.text-muted.small.mb-2
+            %strong Tags tracked:
+            = pluralize(event_tags.size, 'tag')
+          %p.text-muted.small.mb-0
+            %strong Connected coverage:
+            = related_articles.size
+            articles
+        .col-md-6
+          .d-flex.justify-content-between.align-items-center.gap-3
+            .text-center.flex-grow-1
+              - if home_logo.present?
+                %img.mb-2{ src: home_logo, width: 64, height: 64, alt: "#{home_name} badge" }
+              %p.text-muted.small.mb-0 Home
+              %p.fw-semibold= home_name || 'Home'
+            %span.vs-pill VS
+            .text-center.flex-grow-1
+              - if away_logo.present?
+                %img.mb-2{ src: away_logo, width: 64, height: 64, alt: "#{away_name} badge" }
+              %p.text-muted.small.mb-0 Away
+              %p.fw-semibold= away_name || 'Away'
+
+    = render 'events/sentiment_and_coverage',
+      event_tags: event_tags,
+      tag_sentiments: tag_sentiments,
+      related_articles: related_articles,
+      show_coverage: true
+

@@ -13,6 +13,7 @@
 - primary_market = @event.primary_market
 - markets_count = @markets&.size || 0
 - event_tags = @event.tags
+- sentiment_details_path = (@country && @competition) ? sentiment_country_competition_event_path(@country, @competition, @event) : nil
 - breadcrumb_items = [{ label: 'Countries', path: countries_path }]
 - if @country
   - breadcrumb_items << { label: @country.name, path: country_competitions_path(@country) }
@@ -41,9 +42,11 @@
       perc: perc
 
     = render 'events/sentiment_and_coverage',
-      related_articles: @related_articles,
       event_tags: event_tags,
-      tag_sentiments: @tag_sentiments
+      tag_sentiments: @tag_sentiments,
+      related_articles: [],
+      show_coverage: false,
+      details_path: sentiment_details_path
 
     = render 'events/market_pulse',
       primary_market: primary_market,

@@ -1,7 +1,7 @@
 # app/controllers/events_controller.rb
 class EventsController < ApplicationController
   before_action :set_competition, only: :index
-  before_action :set_event, only: :show
+  before_action :set_event, only: [:show, :sentiment]
 
   def index
     @country = Country.find_by(country_code: @competition.country_code)
@@ -9,11 +9,13 @@ class EventsController < ApplicationController
   end
 
   def show
-    @competition = Competition.find_by(betfair_id: @event.betfair_competition_id)
-    @country = Country.find_by(country_code: @competition&.country_code)
+    load_event_context
     @markets = @event.markets
-    @related_articles = @event.related_articles
-    @tag_sentiments = ArticleTag.sentiment_summary_for(@event.tags.map(&:id))
+  end
+
+  def sentiment
+    load_event_context
+    @related_articles = @event.related_articles(limit: 12)
   end
 
   private
@@ -33,6 +35,12 @@ class EventsController < ApplicationController
          .where(betfair_competition_id: @competition.betfair_id)
          .includes(markets: { competitors: :prices })
          .order(:kick_off)
+  end
+
+  def load_event_context
+    @competition = Competition.find_by(betfair_id: @event.betfair_competition_id)
+    @country = Country.find_by(country_code: @competition&.country_code)
+    @tag_sentiments = ArticleTag.sentiment_summary_for(@event.tags.map(&:id))
   end
 
 end
