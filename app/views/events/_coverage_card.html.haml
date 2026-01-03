@@ -26,7 +26,7 @@
           .text-end.small.text-muted
             - source = article.feed_source
             - if source
-              = link_to source.name, feed_source_path(source), class: 'fw-semibold text-decoration-none'
+              %div.fw-semibold= source.name
             - else
               %div.fw-semibold External source
             - if article_time.present?
