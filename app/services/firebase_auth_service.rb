@@ -6,6 +6,6 @@ class FirebaseAuthService
   def self.verify(token)
     # This gem automatically handles Google's public key rotation
     payload = FirebaseIdToken::Signature.verify(token)
-    return payload # Returns nil if invalid
+    payload # Returns nil if invalid
   end
 end

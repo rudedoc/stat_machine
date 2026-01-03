@@ -27,7 +27,7 @@ class BetfairApi
   def list_countries
     payload = {
       filter: {
-        eventTypeIds: ["1"],
+        eventTypeIds: [ "1" ],
         marketStartTime: {
           from: Time.now.utc.strftime("%Y-%m-%dT%H:%M:%SZ"),
           to: 1.week.from_now.end_of_day.strftime("%Y-%m-%dT%H:%M:%SZ")
@@ -45,7 +45,7 @@ class BetfairApi
 
     payload = {
       filter: {
-        eventTypeIds: ["1"],
+        eventTypeIds: [ "1" ],
         marketCountries: filtered_codes,
         marketStartTime: {
           from: Time.now.utc.strftime("%Y-%m-%dT%H:%M:%SZ"),
@@ -62,8 +62,8 @@ class BetfairApi
 
     payload = {
       filter: {
-        eventTypeIds: ["1"],
-        competitionIds: [betfair_competition_id],
+        eventTypeIds: [ "1" ],
+        competitionIds: [ betfair_competition_id ],
         marketStartTime: { from: Time.now.utc.strftime("%Y-%m-%dT%H:%M:%SZ") }
       }
     }
@@ -107,7 +107,7 @@ class BetfairApi
         # We assume this returns an array of hashes with at least { selection_id: ..., percentage: ... }
         probability_data = ProbabilityCalculator.to_percentages(rich_runner_data)
 
-        # 3. MERGE THEM! 
+        # 3. MERGE THEM!
         # We map the percentage back onto the rich data using selection_id as the key
         probs_map = probability_data.index_by { |p| p[:selection_id] }
 
@@ -129,9 +129,9 @@ class BetfairApi
           inplay: book["inplay"],
           total_matched: book["totalMatched"],
           total_available: book["totalAvailable"],
-          
+
           # Now this contains EVERYTHING: spread, total_matched, AND percentage
-          runners: final_runners 
+          runners: final_runners
         }
       end.compact
 
@@ -149,10 +149,10 @@ class BetfairApi
     payload = {
       filter: {
         eventIds: Array(event_ids),
-        marketTypeCodes: ["MATCH_ODDS"]
+        marketTypeCodes: [ "MATCH_ODDS" ]
       },
       maxResults: 100, # Increased to ensure we catch all markets in the chunk
-      marketProjection: ["RUNNER_DESCRIPTION", "EVENT"]
+      marketProjection: [ "RUNNER_DESCRIPTION", "EVENT" ]
     }
     post_request("listMarketCatalogue/", payload)
   end
@@ -163,7 +163,7 @@ class BetfairApi
     return [] if market_ids.empty?
     payload = {
       marketIds: market_ids,
-      priceProjection: { priceData: ["EX_BEST_OFFERS"] }
+      priceProjection: { priceData: [ "EX_BEST_OFFERS" ] }
     }
     post_request("listMarketBook/", payload)
   end
@@ -172,7 +172,7 @@ class BetfairApi
     runners_data.map do |runner|
       back_price = runner.dig("ex", "availableToBack", 0, "price")
       lay_price = runner.dig("ex", "availableToLay", 0, "price")
-      
+
       spread = (lay_price && back_price) ? (lay_price - back_price).round(2) : nil
 
       {
@@ -181,9 +181,9 @@ class BetfairApi
         back_price: back_price,
         lay_price: lay_price,
         spread: spread,
-        
+
         # FIX: Add || 0.0 here to prevent nils in your database
-        total_matched: runner["totalMatched"] || 0.0,      
+        total_matched: runner["totalMatched"] || 0.0,
         last_price_traded: runner["lastPriceTraded"]
       }
     end
@@ -191,9 +191,9 @@ class BetfairApi
 
   def post_request(endpoint, body)
     response = Faraday.post(BASE_URL + endpoint) do |req|
-      req.headers['X-Application'] = @app_key
-      req.headers['X-Authentication'] = @session_token
-      req.headers['Content-Type'] = 'application/json'
+      req.headers["X-Application"] = @app_key
+      req.headers["X-Authentication"] = @session_token
+      req.headers["Content-Type"] = "application/json"
       req.body = body.to_json
     end
     JSON.parse(response.body)
@@ -202,9 +202,9 @@ class BetfairApi
   def get_session_token
     Rails.cache.fetch("betfair_session_token", expires_in: 20.minutes) do
       response = Faraday.post(LOGIN_URL) do |req|
-        req.headers['X-Application'] = @app_key
-        req.headers['Content-Type'] = 'application/x-www-form-urlencoded'
-        req.headers['Accept'] = 'application/json'
+        req.headers["X-Application"] = @app_key
+        req.headers["Content-Type"] = "application/x-www-form-urlencoded"
+        req.headers["Accept"] = "application/json"
         req.body = URI.encode_www_form(
           username: Rails.application.credentials.dig(:betfair, :username),
           password: Rails.application.credentials.dig(:betfair, :password)

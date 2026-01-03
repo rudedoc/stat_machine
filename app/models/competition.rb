@@ -32,7 +32,7 @@ class Competition < ApplicationRecord
     return [] unless country_code.present?
 
     api ||= BetfairApi.new
-    payloads = api.list_competitions([country_code])
+    payloads = api.list_competitions([ country_code ])
     payloads.filter_map do |payload|
       betfair_competition = payload["competition"] || {} rescue binding.pry
       betfair_id = betfair_competition["id"]

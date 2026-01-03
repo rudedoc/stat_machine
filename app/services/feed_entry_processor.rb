@@ -32,7 +32,7 @@ class FeedEntryProcessor
       cleaned_name = clean_entity_name(team_name)
       next if cleaned_name.blank?
 
-      tag = Tag.find_or_create_by_name_or_alias!(cleaned_name, category: 'team')
+      tag = Tag.find_or_create_by_name_or_alias!(cleaned_name, category: "team")
       next unless tag
       upsert_article_tag(
         article,
@@ -45,7 +45,7 @@ class FeedEntryProcessor
       cleaned_name = clean_entity_name(person_name)
       next if cleaned_name.blank?
 
-      tag = Tag.find_or_create_by_name_or_alias!(cleaned_name, category: 'person')
+      tag = Tag.find_or_create_by_name_or_alias!(cleaned_name, category: "person")
       next unless tag
       upsert_article_tag(
         article,
@@ -86,7 +86,7 @@ class FeedEntryProcessor
     sentiment = value.to_s.downcase
     return sentiment if ArticleTag::SENTIMENT_VALUES.include?(sentiment)
 
-    'neutral'
+    "neutral"
   end
 
   def sanitize_score(value)
@@ -96,6 +96,6 @@ class FeedEntryProcessor
   end
 
   def default_sentiment_attributes
-    { sentiment: 'neutral', sentiment_score: 0.0 }
+    { sentiment: "neutral", sentiment_score: 0.0 }
   end
 end

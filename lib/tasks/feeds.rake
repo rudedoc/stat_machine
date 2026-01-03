@@ -3,6 +3,7 @@ namespace :feeds do
   desc "Fetch and import latest entries from all active feed sources"
   task import_all: :environment do
     puts "Starting global feed import..."
+    start_time = Process.clock_gettime(Process::CLOCK_MONOTONIC)
 
     # Iterate over all sources
     FeedSource.find_each do |source|
@@ -15,8 +16,8 @@ namespace :feeds do
         Rails.logger.error("Feed Import Task Error [#{source.name}]: #{e.message}")
       end
     end
-
-    puts "Global import complete."
+    elapsed = Process.clock_gettime(Process::CLOCK_MONOTONIC) - start_time
+    puts "Global import complete in #{format('%.2f', elapsed)}s."
   end
 
   desc "Import a specific feed by ID (Usage: rake feeds:import_one[1])"

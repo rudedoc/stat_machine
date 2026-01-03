@@ -13,16 +13,13 @@ class FeedImporter
     new_count = 0
 
     entries.each do |entry|
-      # 2. Idempotency check: Skip if we already have this URL
-      next if Article.exists?(url: entry.url)
+      # 2-3. Create or find the Article idempotently
+      article, created = find_or_create_article(entry)
 
-      # 3. Create the Article
-      article = create_article(entry)
+      # 4. Perform NER (Entity Extraction) ONLY for newly imported articles
+      next unless created && article&.persisted?
 
-      # 4. Perform NER (Entity Extraction)
-      # specific logic to handle the API call safely
-      extract_and_tag(article) if article.persisted?
-
+      extract_and_tag(article)
       new_count += 1
     end
 
@@ -31,17 +28,21 @@ class FeedImporter
 
   private
 
-  def create_article(entry)
-    Article.create(
-      feed_source: @feed_source,
-      title: entry.title,
-      url: entry.url,
-      published_at: entry.published_at || Time.current,
-      content: entry.text
-    )
+  def find_or_create_article(entry)
+    article = Article.find_or_create_by(url: entry.url) do |a|
+      a.feed_source   = @feed_source
+      a.title         = entry.title
+      a.published_at  = entry.published_at || Time.current
+      a.content       = entry.text
+    end
+
+    # If the record was created in this call, Rails will have an id change
+    created = article.previous_changes.key?("id")
+    [ article, created ]
   rescue ActiveRecord::RecordNotUnique
-    # Handle race conditions where two processes insert the same URL simultaneously
-    nil
+    # If a race condition occurred, fetch the existing record and mark as not created
+    existing = Article.find_by(url: entry.url)
+    [ existing, false ]
   end
 
   def extract_and_tag(article)
@@ -58,7 +59,7 @@ class FeedImporter
         cleaned_name = clean_entity_name(team_name)
         next if cleaned_name.blank?
 
-        tag = Tag.find_or_create_by_name_or_alias!(cleaned_name, category: 'team')
+        tag = Tag.find_or_create_by_name_or_alias!(cleaned_name, category: "team")
         next unless tag
         upsert_article_tag(
           article,
@@ -72,7 +73,7 @@ class FeedImporter
         cleaned_name = clean_entity_name(person_name)
         next if cleaned_name.blank?
 
-        tag = Tag.find_or_create_by_name_or_alias!(cleaned_name, category: 'person')
+        tag = Tag.find_or_create_by_name_or_alias!(cleaned_name, category: "person")
         next unless tag
         upsert_article_tag(
           article,
@@ -114,7 +115,7 @@ class FeedImporter
     sentiment = value.to_s.downcase
     return sentiment if ArticleTag::SENTIMENT_VALUES.include?(sentiment)
 
-    'neutral'
+    "neutral"
   end
 
   def sanitize_score(value)
@@ -124,6 +125,6 @@ class FeedImporter
   end
 
   def default_sentiment_attributes
-    { sentiment: 'neutral', sentiment_score: 0.0 }
+    { sentiment: "neutral", sentiment_score: 0.0 }
   end
 end

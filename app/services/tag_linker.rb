@@ -12,7 +12,7 @@ class TagLinker
   def link_competitor!(competitor)
     return unless competitor&.name.present?
 
-    tag = Tag.identify(competitor.name, category: 'team')
+    tag = Tag.identify(competitor.name, category: "team")
     return unless tag
 
     link_records(tag, competitor)
@@ -46,7 +46,7 @@ class TagLinker
   end
 
   def normalized_names(tag)
-    [tag&.name, *Array(tag&.aliases)].map { |value| value.to_s.downcase.strip }
+    [ tag&.name, *Array(tag&.aliases) ].map { |value| value.to_s.downcase.strip }
                                      .reject(&:blank?).uniq
   end
 end

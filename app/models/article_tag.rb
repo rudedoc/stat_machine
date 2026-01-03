@@ -39,11 +39,11 @@ class ArticleTag < ApplicationRecord
     end
 
     def sentiment_label_for_score(score)
-      return 'neutral' if score.nil?
-      return 'positive' if score > 0.1
-      return 'negative' if score < -0.1
+      return "neutral" if score.nil?
+      return "positive" if score > 0.1
+      return "negative" if score < -0.1
 
-      'neutral'
+      "neutral"
     end
   end
 end

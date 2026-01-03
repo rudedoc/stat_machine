@@ -33,7 +33,7 @@ class BetfairSnapshotPersister
     return unless competition
 
     event = Event.find_or_initialize_by(betfair_event_id: match[:betfair_event_id])
-    
+
     # Merge Event Level Liquidity
     updated_exchange_data = (event.exchange_data || {}).merge({
       total_matched: match[:total_matched],
@@ -74,12 +74,12 @@ class BetfairSnapshotPersister
     return unless selection_id.present?
 
     competitor = market.competitors.find_or_initialize_by(selection_id: selection_id.to_s)
-    
+
     # UDPATE: Store Runner Level Liquidity
     # Mirrors the event logic. Assumes 'exchange_data' JSON column exists on Competitors.
     # If not, add migration: add_column :competitors, :exchange_data, :jsonb, default: {}
     current_data = competitor.attributes["exchange_data"] || {} rescue {}
-    
+
     competitor.assign_attributes(
       name: runner[:name],
       exchange_data: current_data.merge({

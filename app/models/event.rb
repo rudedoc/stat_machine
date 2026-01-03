@@ -10,7 +10,7 @@ class Event < ApplicationRecord
   validates :betfair_event_id, presence: true, uniqueness: true
   validates :betfair_competition_id, :name, :kick_off, presence: true
 
-  scope :upcoming, -> { where('kick_off >= ?', Time.current) }
+  scope :upcoming, -> { where("kick_off >= ?", Time.current) }
   default_scope -> { upcoming }
 
   def primary_market
@@ -18,27 +18,27 @@ class Event < ApplicationRecord
   end
 
   def predicted_home_team
-    predicted_team_for('home')
+    predicted_team_for("home")
   end
 
   def predicted_away_team
-    predicted_team_for('away')
+    predicted_team_for("away")
   end
 
   def home_team_logo
-    predicted_home_team['logo']
+    predicted_home_team["logo"]
   end
 
   def away_team_logo
-    predicted_away_team['logo']
+    predicted_away_team["logo"]
   end
 
   def home_team_name
-    predicted_home_team['name']
+    predicted_home_team["name"]
   end
 
   def away_team_name
-    predicted_away_team['name']
+    predicted_away_team["name"]
   end
 
   def to_param
@@ -49,7 +49,7 @@ class Event < ApplicationRecord
     return unless event.sportmonks_fixture_id
 
     data = SportmonksClient.new.fixture_stats(event.sportmonks_fixture_id)
-    stats = data.dig('data', 'statistics')
+    stats = data.dig("data", "statistics")
 
     # Logic to save stats (e.g., event.update(external_stats: stats))
   end
@@ -61,7 +61,7 @@ class Event < ApplicationRecord
     Article
       .includes(:feed_source, article_tags: :tag)
       .where(id: ArticleTag.select(:article_id).where(tag_id: tag_ids))
-      .order(Arel.sql('COALESCE(articles.published_at, articles.created_at) DESC'))
+      .order(Arel.sql("COALESCE(articles.published_at, articles.created_at) DESC"))
       .limit(limit)
       .to_a
   end
@@ -71,7 +71,7 @@ class Event < ApplicationRecord
   def predicted_team_for(side)
     return {} unless predictions.respond_to?(:dig)
 
-    predictions.dig('teams', side.to_s) || {}
+    predictions.dig("teams", side.to_s) || {}
   end
 
   def related_tag_ids
@@ -80,9 +80,9 @@ class Event < ApplicationRecord
                         markets.flat_map do |market|
                           market.competitors.flat_map { |competitor| competitor.tags.loaded? ? competitor.tags : competitor.tags.to_a }
                         end
-                      else
+    else
                         []
-                      end
+    end
 
     (event_tags + competitor_tags).map(&:id).compact.uniq
   end

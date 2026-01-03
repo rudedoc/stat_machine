@@ -8,15 +8,15 @@ class User < ApplicationRecord
   class << self
     # Build or update a user record based on Firebase payload data.
     def from_firebase(payload)
-      uid = payload['sub'] || payload['user_id']
-      raise ArgumentError, 'Missing Firebase UID' unless uid.present?
+      uid = payload["sub"] || payload["user_id"]
+      raise ArgumentError, "Missing Firebase UID" unless uid.present?
 
       user = find_or_initialize_by(firebase_uid: uid)
-      user.email = payload['email'] if payload['email'].present?
-      user.display_name = payload['name'] || payload['display_name']
-      user.photo_url = payload['picture'] if payload['picture'].present?
+      user.email = payload["email"] if payload["email"].present?
+      user.display_name = payload["name"] || payload["display_name"]
+      user.photo_url = payload["picture"] if payload["picture"].present?
 
-      auth_time = payload['auth_time']
+      auth_time = payload["auth_time"]
       if auth_time.present?
         seconds = auth_time.is_a?(Numeric) ? auth_time : auth_time.to_i
         time_value = Time.zone ? Time.zone.at(seconds) : Time.at(seconds)

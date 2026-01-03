@@ -8,11 +8,11 @@ class ProbabilityCalculator
       # Use mid-price if both exist, otherwise use whichever is available
       mid_price = if back > 0 && lay > 0
                     (back + lay) / 2.0
-                  elsif back > 0 || lay > 0
+      elsif back > 0 || lay > 0
                     back > 0 ? back : lay
-                  else
+      else
                     0
-                  end
+      end
 
       # Avoid division by zero: if no price, probability is 0
       mid_price > 0 ? (1.0 / mid_price) : 0

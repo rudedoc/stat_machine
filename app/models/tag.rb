@@ -2,8 +2,8 @@ class Tag < ApplicationRecord
   has_many :article_tags, dependent: :destroy
   has_many :articles, through: :article_tags
   has_many :taggings, dependent: :destroy
-  has_many :events, -> { where(taggings: { taggable_type: 'Event' }) }, through: :taggings, source: :taggable, source_type: 'Event'
-  has_many :competitors, -> { where(taggings: { taggable_type: 'Competitor' }) }, through: :taggings, source: :taggable, source_type: 'Competitor'
+  has_many :events, -> { where(taggings: { taggable_type: "Event" }) }, through: :taggings, source: :taggable, source_type: "Event"
+  has_many :competitors, -> { where(taggings: { taggable_type: "Competitor" }) }, through: :taggings, source: :taggable, source_type: "Competitor"
 
   after_commit :link_related_entities, on: %i[create update], if: :linkable_change?
   before_save :normalize_aliases
@@ -12,8 +12,8 @@ class Tag < ApplicationRecord
   validates :name, presence: true, uniqueness: { scope: :category, case_sensitive: false }
 
   # Scopes for easy access
-  scope :teams, -> { where(category: 'team') }
-  scope :players, -> { where(category: 'person') }
+  scope :teams, -> { where(category: "team") }
+  scope :players, -> { where(category: "person") }
 
   def self.identify(raw_text, category: nil)
     clean_text = raw_text.to_s.downcase.strip
@@ -118,7 +118,7 @@ class Tag < ApplicationRecord
   def prefer_article_tag_update?(current, incoming)
     return false if incoming.sentiment.blank?
 
-    current.sentiment == 'neutral' && incoming.sentiment != 'neutral' ||
+    current.sentiment == "neutral" && incoming.sentiment != "neutral" ||
       incoming.sentiment_score.to_f.abs > current.sentiment_score.to_f.abs
   end
 end
