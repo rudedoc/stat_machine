@@ -71,7 +71,7 @@ gem "firebase_id_token", "~> 2.5"
 
 gem "httparty", "~> 0.23.2"
 
-gem "countries", "~> 8.0"
+gem "countries", "~> 8.1"
 
 gem "rss", "~> 0.3.2"
 
