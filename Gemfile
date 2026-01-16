@@ -69,7 +69,7 @@ gem "google-id-token", "~> 1.4"
 
 gem "firebase_id_token", "~> 2.5"
 
-gem "httparty", "~> 0.23.2"
+gem "httparty", "~> 0.24.2"
 
 gem "countries", "~> 8.0"
 
