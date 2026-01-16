@@ -150,7 +150,7 @@ GEM
       haml (>= 4.0)
       nokogiri (>= 1.6.0)
       ruby_parser (~> 3.5)
-    httparty (0.23.2)
+    httparty (0.24.2)
       csv
       mini_mime (>= 1.0.0)
       multi_xml (>= 0.5.2)
@@ -201,7 +201,7 @@ GEM
     minitest (6.0.0)
       prism (~> 1.5)
     msgpack (1.8.0)
-    multi_xml (0.8.0)
+    multi_xml (0.8.1)
       bigdecimal (>= 3.1, < 5)
     multipart-post (2.4.1)
     mutex_m (0.3.0)
@@ -448,7 +448,7 @@ DEPENDENCIES
   google-id-token (~> 1.4)
   haml-rails (~> 3.0)
   html2haml (~> 2.3)
-  httparty (~> 0.23.2)
+  httparty (~> 0.24.2)
   image_processing (~> 1.2)
   jbuilder
   kamal
